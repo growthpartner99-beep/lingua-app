@@ -24,15 +24,15 @@ This skill covers two areas:
 
 | Task | Reference |
 |------|-----------|
-| Custom sign-in (Core 2 / LTS) | core-2/custom-sign-in.md |
-| Custom sign-up (Core 2 / LTS) | core-2/custom-sign-up.md |
-| Custom sign-in (Current SDK v7+) | core-3/custom-sign-in.md |
-| Custom sign-up (Current SDK v7+) | core-3/custom-sign-up.md |
-| Show component pattern (Current SDK) | core-3/show-component.md |
+| Custom sign-in (@clerk/react v6 / @clerk/expo v3) | core-2/custom-sign-in.md |
+| Custom sign-up (@clerk/react v6 / @clerk/expo v3) | core-2/custom-sign-up.md |
+| Custom sign-in (@clerk/react v7+ / @clerk/expo v4+) | core-3/custom-sign-in.md |
+| Custom sign-up (@clerk/react v7+ / @clerk/expo v4+) | core-3/custom-sign-up.md |
+| Show component pattern (@clerk/react v7+ / @clerk/expo v4+) | core-3/show-component.md |
 
 ## Custom Flow References
 
-| Task | Core 2 | Current |
+| Task | @clerk/react v6 / v3 | @clerk/react v7+ / v4+ |
 |------|--------|---------|
 | Custom sign-in (useSignIn) | `core-2/custom-sign-in.md` | `core-3/custom-sign-in.md` |
 | Custom sign-up (useSignUp) | `core-2/custom-sign-up.md` | `core-3/custom-sign-up.md` |

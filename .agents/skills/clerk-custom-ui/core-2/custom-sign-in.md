@@ -34,9 +34,22 @@ const result = await signIn.create({
 If additional verification is needed (email code, phone code):
 
 ```typescript
-// Prepare first factor
+// Select the matching email factor and prepare first factor verification
+const emailFactor = signIn.supportedFirstFactors.find(
+  f => f.strategy === 'email_code'
+)
 await signIn.prepareFirstFactor({
-  strategy: 'email_code', // or 'phone_code'
+  strategy: 'email_code',
+  emailAddressId: emailFactor?.emailAddressId,
+})
+
+// Or for phone code:
+const phoneFactor = signIn.supportedFirstFactors.find(
+  f => f.strategy === 'phone_code'
+)
+await signIn.prepareFirstFactor({
+  strategy: 'phone_code',
+  phoneNumberId: phoneFactor?.phoneNumberId,
 })
 
 // Attempt first factor
@@ -51,14 +64,18 @@ const result = await signIn.attemptFirstFactor({
 If the sign-in requires MFA:
 
 ```typescript
-// Prepare second factor
+// Prepare second factor — only phone_code is supported
+const phoneFactor = signIn.supportedSecondFactors.find(
+  f => f.strategy === 'phone_code'
+)
 await signIn.prepareSecondFactor({
-  strategy: 'email_code', // or 'phone_code'
+  strategy: 'phone_code',
+  phoneNumberId: phoneFactor?.phoneNumberId,
 })
 
 // Attempt second factor
 const result = await signIn.attemptSecondFactor({
-  strategy: 'totp', // or 'email_code', 'phone_code', 'backup_code'
+  strategy: 'phone_code',
   code: '123456',
 })
 ```
@@ -77,8 +94,14 @@ await setActive({ session: signIn.createdSessionId })
 // 1. Start reset flow
 await signIn.create({ strategy: 'reset_password_email_code', identifier: 'user@example.com' })
 
-// or prepare after initial create:
-await signIn.prepareFirstFactor({ strategy: 'reset_password_email_code' })
+// or prepare with email ID after initial create:
+const emailFactor = signIn.supportedFirstFactors.find(
+  f => f.strategy === 'reset_password_email_code'
+)
+await signIn.prepareFirstFactor({ 
+  strategy: 'reset_password_email_code',
+  emailAddressId: emailFactor?.emailAddressId,
+})
 
 // 2. Verify reset code
 await signIn.attemptFirstFactor({ strategy: 'reset_password_email_code', code: '123456' })
