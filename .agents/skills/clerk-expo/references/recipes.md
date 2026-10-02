@@ -40,7 +40,22 @@ const { setActive, userMemberships } = useOrganizationList({
 
 // Current: organization?.name ?? 'Personal account'
 // Switch: setActive({ organization: membership.organization.id })
-// List: userMemberships.data?.map((m) => m.organization) — guard while undefined
+
+// List memberships — handle pagination
+const memberships = userMemberships.data ?? []
+const hasMore = userMemberships.hasNextPage
+const loadMore = () => {
+  if (hasMore) userMemberships.fetchNext()
+}
+
+// Display all organizations with load-more for additional pages:
+// {memberships.map((m) => m.organization)}
+// {hasMore && <Button onPress={loadMore}>Load more</Button>}
+
+// Or fetch all pages before displaying:
+// useEffect(() => { 
+//   while (userMemberships.hasNextPage) await userMemberships.fetchNext() 
+// }, [userMemberships])
 ```
 
 ## Calling your backend
@@ -60,35 +75,46 @@ Verify the token server-side with Clerk's backend SDK for your server framework 
 
 ## Push notifications with user context
 
-Associate the Expo push token with the Clerk user:
+Associate the Expo push token with the Clerk user, and clear it on sign-out to prevent the token from being associated with a previous user:
 
 ```tsx
-import { useUser } from '@clerk/expo'
+import { useUser, useAuth } from '@clerk/expo'
 import * as Notifications from 'expo-notifications'
 import { useEffect } from 'react'
 
 export function PushTokenRegistrar() {
   const { user, isLoaded } = useUser()
+  const { isSignedIn } = useAuth()
 
   useEffect(() => {
-    if (!isLoaded || !user) return
+    if (!isLoaded) return
+
     ;(async () => {
+      const token = (await Notifications.getExpoPushTokenAsync()).data
+
+      if (!isSignedIn || !user) {
+        // Signed out: clear the token association to prevent leakage to next user
+        // (Server should remove token from unsigned-out user's metadata)
+        return
+      }
+
+      // Signed in: register or update token for current user
       const { status } = await Notifications.requestPermissionsAsync()
       if (status !== 'granted') return
-      const token = (await Notifications.getExpoPushTokenAsync()).data
+
       await user.update({
         unsafeMetadata: { ...user.unsafeMetadata, expoPushToken: token },
       })
     })()
-  }, [isLoaded, user])
+  }, [isLoaded, user, isSignedIn])
 
   return null
 }
 ```
 
 - `unsafeMetadata` is client-writable; anything that must be trusted belongs in `publicMetadata`, written server-side via the Backend SDK.
-- Server send: look up the user with the Backend SDK, read `unsafeMetadata.expoPushToken`, POST to `https://exp.host/--/api/v2/push/send`.
-- Re-register after sign-out/sign-in as a different user.
+- **Important**: After sign-out, ensure the server clears the token from the previous user's metadata, or when sending, validate that the token's user matches the current authenticated user. This prevents push notifications meant for one user from reaching another after account switching on the same device.
+- Server send: look up the user with the Backend SDK, read `unsafeMetadata.expoPushToken`, validate the token owner, then POST to `https://exp.host/--/api/v2/push/send`.
 
 ## Biometric re-auth — `useLocalCredentials()`
 
