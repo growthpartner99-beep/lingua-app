@@ -92,7 +92,7 @@ npx -y clerk@latest init --no-skills
 Ask which framework and package manager to use, defaulting to Next.js and npm:
 
 ```bash
-npx -y clerk@latest init --framework <framework> --pm <package-manager> --no-skills
+npx -y clerk@latest init --framework <framework> --pm <package-manager> --starter-project --no-skills
 ```
 
 `init` creates the app in a new subdirectory, such as `my-clerk-next-app`, not in the current directory. Run the remaining steps from that subdirectory.
@@ -166,11 +166,40 @@ Then start the app, confirm the auth controls render, and fix anything the CLI r
 
 ## Step 5: If using shadcn/ui
 
-If `components.json` exists in the project root, add `@clerk/ui` with the project's package manager. Match the lockfile: `pnpm-lock.yaml` → `pnpm add`, `yarn.lock` → `yarn add`, `bun.lock` or `bun.lockb` → `bun add`, `package-lock.json` → `npm install`.
+If `components.json` exists in the project root, add the Clerk UI theming package based on your Clerk generation.
 
-Apply the theme in your provider:
+**For Core 2 (@clerk/react v6, @clerk/nextjs v4, etc.):**
 
-```text
+Add `@clerk/themes` with the project's package manager:
+
+```bash
+npm install @clerk/themes
+# or: pnpm add, yarn add, bun add (based on your lockfile)
+```
+
+Apply the theme in your provider using `appearance.baseTheme`:
+
+```typescript
+import { ThemeProvider } from '@clerk/themes'
+
+<ClerkProvider appearance={{ baseTheme: 'light' }}>
+  {children}
+</ClerkProvider>
+```
+
+Add to global CSS:
+
+```css
+@import '@clerk/themes';
+```
+
+**For Core 3 (@clerk/react v7+, @clerk/nextjs v5+, etc.):**
+
+Add `@clerk/ui` with the project's package manager. Match the lockfile: `pnpm-lock.yaml` → `pnpm add`, `yarn.lock` → `yarn add`, `bun.lock` or `bun.lockb` → `bun add`, `package-lock.json` → `npm install`.
+
+Apply the theme in your provider using `appearance.theme`:
+
+```typescript
 import { shadcn } from '@clerk/ui/themes'
 
 <ClerkProvider appearance={{ theme: shadcn }}>{children}</ClerkProvider>
