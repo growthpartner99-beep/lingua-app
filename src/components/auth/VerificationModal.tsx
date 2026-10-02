@@ -16,7 +16,7 @@ type VerificationModalProps = {
   visible: boolean;
   email: string;
   onClose: () => void;
-  onVerified: () => void;
+  onVerify: (code: string) => Promise<string | null>;
 };
 
 const CODE_LENGTH = 6;
@@ -25,35 +25,57 @@ export function VerificationModal({
   visible,
   email,
   onClose,
-  onVerified,
+  onVerify,
 }: VerificationModalProps) {
   const [code, setCode] = useState("");
-  const onVerifiedRef = useRef(onVerified);
+  const [error, setError] = useState<string | null>(null);
+  const [verifying, setVerifying] = useState(false);
+  const onVerifyRef = useRef(onVerify);
+  const verifyingRef = useRef(false);
 
   const handleClose = () => {
     setCode("");
+    setError(null);
     onClose();
   };
 
   useEffect(() => {
-    onVerifiedRef.current = onVerified;
-  }, [onVerified]);
+    onVerifyRef.current = onVerify;
+  }, [onVerify]);
 
   useEffect(() => {
-    if (code.length < CODE_LENGTH) return;
-    const timer = setTimeout(() => {
-      setCode("");
-      onVerifiedRef.current();
+    if (code.length < CODE_LENGTH || verifyingRef.current) return;
+
+    const timer = setTimeout(async () => {
+      verifyingRef.current = true;
+      setVerifying(true);
+
+      const message = await onVerifyRef.current(code);
+
+      verifyingRef.current = false;
+      setVerifying(false);
+
+      if (message) {
+        setError(message);
+        setCode("");
+      }
     }, 250);
+
     return () => clearTimeout(timer);
   }, [code]);
 
   const handleChange = (raw: string) => {
+    setError(null);
     setCode(raw.replace(/[^0-9]/g, "").slice(0, CODE_LENGTH));
   };
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={handleClose}>
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      onRequestClose={handleClose}
+    >
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.backdrop}
@@ -97,9 +119,16 @@ export function VerificationModal({
               textContentType="oneTimeCode"
               maxLength={CODE_LENGTH}
               autoFocus
+              editable={!verifying}
               style={styles.codeInput}
             />
           </View>
+
+          {error ? (
+            <Text className="mt-3 text-center font-poppins-regular text-[14px] leading-[20px] text-semantic-error">
+              {error}
+            </Text>
+          ) : null}
 
           <TouchableOpacity
             activeOpacity={0.8}
