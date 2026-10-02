@@ -100,7 +100,7 @@ export default function Onboarding() {
 
           <TouchableOpacity
             activeOpacity={0.85}
-            onPress={() => router.dismissTo("/")}
+            onPress={() => router.push("/sign-up")}
             className="mx-5 mb-5 mt-4 h-[68px] flex-row items-center justify-center gap-3 rounded-[20px] bg-primary-purple"
           >
             <Text className="font-poppins-bold text-[20px] text-text-on-accent">

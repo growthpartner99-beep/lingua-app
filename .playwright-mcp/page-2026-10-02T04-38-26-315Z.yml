@@ -1,0 +1,30 @@
+- generic [ref=e17]:
+  - generic [ref=e18]:
+    - generic [ref=e20] [cursor=pointer]: 
+    - generic [ref=e21]: Create your account
+    - generic [ref=e22]: Start your language journey today ✨
+  - generic [ref=e23]:
+    - generic [ref=e28]: 󰫢
+    - generic [ref=e30]: 󰫢
+    - generic [ref=e32]: 󰫢
+  - generic [ref=e33]:
+    - generic [ref=e34]:
+      - generic [ref=e36]:
+        - generic [ref=e37]: Email
+        - textbox "alex@gmail.com" [ref=e38]
+      - generic [ref=e39]:
+        - generic [ref=e40]:
+          - generic [ref=e41]: Password
+          - textbox "••••••••" [ref=e42]
+        - generic [ref=e44] [cursor=pointer]: 
+    - generic [ref=e46] [cursor=pointer]: Sign Up
+    - generic [ref=e49]: or continue with
+    - generic [ref=e51]:
+      - generic [ref=e56] [cursor=pointer]: Continue with Google
+      - generic [ref=e57] [cursor=pointer]:
+        - generic [ref=e59]: 
+        - generic [ref=e60]: Continue with Facebook
+      - generic [ref=e61] [cursor=pointer]:
+        - generic [ref=e63]: 
+        - generic [ref=e64]: Continue with Apple
+    - generic [ref=e65]: Already have an account? Log in
