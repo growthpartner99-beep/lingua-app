@@ -90,8 +90,12 @@ The published npm package is **`clerk`**, not `@clerk/cli`. Never teach `npm ins
 
 ## Prerequisites
 
+**Commands that require account/platform authentication (no project link needed):**
+- `clerk apps list` / `clerk apps create` — list or create applications (Platform API)
+- `clerk config pull` / `clerk config patch` / `clerk config put` — instance config (requires `--app` or linked project)
+
 **Commands that require authentication and project linking:**
-Most Clerk commands (`setup`, `apps`, `instance configure`, etc.) require you to be logged in and have a project linked. Start with:
+Most Clerk commands (`setup`, `instance configure`, etc.) require you to be logged in and have a project linked. Start with:
 
 ```sh
 clerk --version               # confirm the binary is on PATH

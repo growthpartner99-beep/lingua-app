@@ -24,19 +24,19 @@ This skill covers two areas:
 
 | Task | Reference |
 |------|-----------|
-| Custom sign-in (@clerk/react v6 / @clerk/expo v3) | core-2/custom-sign-in.md |
-| Custom sign-up (@clerk/react v6 / @clerk/expo v3) | core-2/custom-sign-up.md |
-| Custom sign-in (@clerk/react v7+ / @clerk/expo v4+) | core-3/custom-sign-in.md |
-| Custom sign-up (@clerk/react v7+ / @clerk/expo v4+) | core-3/custom-sign-up.md |
+| Custom sign-in (@clerk/react v6+ / @clerk/expo v3+) | core-3/custom-sign-in.md |
+| Custom sign-up (@clerk/react v6+ / @clerk/expo v3+) | core-3/custom-sign-up.md |
+| Custom sign-in (@clerk/clerk-react v5 / @clerk/clerk-expo v2) | core-2/custom-sign-in.md |
+| Custom sign-up (@clerk/clerk-react v5 / @clerk/clerk-expo v2) | core-2/custom-sign-up.md |
 | Show component pattern (@clerk/react v7+ / @clerk/expo v4+) | core-3/show-component.md |
 
 ## Custom Flow References
 
-| Task | @clerk/react v6 / v3 | @clerk/react v7+ / v4+ |
-|------|--------|---------|
-| Custom sign-in (useSignIn) | `core-2/custom-sign-in.md` | `core-3/custom-sign-in.md` |
-| Custom sign-up (useSignUp) | `core-2/custom-sign-up.md` | `core-3/custom-sign-up.md` |
-| `<Show>` component | *(use `<SignedIn>`, `<SignedOut>`, `<Protect>`)* | `core-3/show-component.md` |
+| Task | @clerk/react v6+ / @clerk/expo v3+ | @clerk/clerk-react v5 / @clerk/clerk-expo v2 |
+|------|-------------------------------------|----------------------------------------------|
+| Custom sign-in (useSignIn) | `core-3/custom-sign-in.md` | `core-2/custom-sign-in.md` |
+| Custom sign-up (useSignUp) | `core-3/custom-sign-up.md` | `core-2/custom-sign-up.md` |
+| `<Show>` component | `core-3/show-component.md` | *(use `<SignedIn>`, `<SignedOut>`, `<Protect>`)* |
 
 ---
 

@@ -72,11 +72,11 @@ export async function POST(req: NextRequest) {
     // Upsert: if user exists from a previous create, skip duplicate; if deleted, don't recreate
     await db.users.upsert({
       where: { clerkId: id },
-      create: { clerkId: id, email, name, deletedAt: null, eventTimestamp: evt.created_at },
+      create: { clerkId: id, email, name, deletedAt: null, eventTimestamp: evt.timestamp },
       update: (existing) => 
-        existing.deletedAt || (existing.eventTimestamp >= evt.created_at)
+        existing.deletedAt || (existing.eventTimestamp >= evt.timestamp)
           ? {} // Skip if deleted or event is older than stored
-          : { email, name, deletedAt: null, eventTimestamp: evt.created_at },
+          : { email, name, deletedAt: null, eventTimestamp: evt.timestamp },
     })
   }
 
@@ -85,14 +85,14 @@ export async function POST(req: NextRequest) {
     const emailObj = email_addresses.find(e => e.id === primary_email_address_id)
     const email = emailObj?.email_address
     
-    // Only update if event is newer than stored timestamp, and user is not soft-deleted
-    await db.users.update({
-      where: { clerkId: id },
-      data: { email, first_name, last_name, eventTimestamp: evt.created_at },
-      // Guard: only update if not deleted AND event is newer
-      ...(await db.users.findUnique({ where: { clerkId: id } }).then(u =>
-        u?.deletedAt || u?.eventTimestamp >= evt.created_at ? { skip: true } : {}
-      )),
+    // Atomic conditional update: only update if user exists, not deleted, and event is newer
+    await db.users.updateMany({
+      where: {
+        clerkId: id,
+        deletedAt: null,
+        eventTimestamp: { lt: evt.timestamp },
+      },
+      data: { email, first_name, last_name, eventTimestamp: evt.timestamp },
     })
   }
 
@@ -102,7 +102,7 @@ export async function POST(req: NextRequest) {
     // Soft-delete: mark with timestamp instead of removing, prevents older events from recreating
     await db.users.update({
       where: { clerkId: id },
-      data: { deletedAt: new Date(), eventTimestamp: evt.created_at },
+      data: { deletedAt: new Date(), eventTimestamp: evt.timestamp },
     })
   }
 
@@ -133,6 +133,7 @@ Notification-only handlers still verify the signature. Same pattern as the datab
 import { verifyWebhook } from '@clerk/nextjs/webhooks'
 import { NextRequest } from 'next/server'
 import { Resend } from 'resend'
+import { db } from '@/lib/db' // your database client
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -154,60 +155,79 @@ export async function POST(req: NextRequest) {
     const email = emailObj?.email_address
     const name = `${first_name ?? ''} ${last_name ?? ''}`.trim()
 
-    // Step 4a: Check if this notification was already sent (use svix-id for idempotency)
+// Step 4a: Check per-channel delivery status (use svix-id for idempotency)
     const eventId = req.headers.get('svix-id')
+    let existingEmailSent = false
+    let existingSlackSent = false
     if (eventId) {
       const existing = await db.sentNotifications.findUnique({
         where: { eventId },
       })
-      if (existing?.emailSent) {
-        console.log(`Notification already sent for event ${eventId}, skipping`)
-        return new Response('OK', { status: 200 })
-      }
+      existingEmailSent = existing?.emailSent ?? false
+      existingSlackSent = existing?.slackSent ?? false
     }
 
-    // Step 4b: Call Resend API to send welcome email
-    // Escape user-provided name to prevent HTML injection
-    const escapedName = name
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#x27;')
-    
-    const emailResult = await resend.emails.send({
-      from: 'noreply@yourdomain.com',
-      to: email,
-      subject: 'Welcome!',
-      html: `<p>Hi ${escapedName}, welcome to our app!</p>`,
-    })
-
-    if (emailResult.error) {
-      console.error('Resend email failed:', emailResult.error)
-      throw new Error(`Email send failed: ${emailResult.error?.message}`)
-    }
-
-    // Step 5: Post notification to Slack channel
-    const slackResponse = await fetch(process.env.SLACK_WEBHOOK_URL!, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        text: `New user signed up: ${escapedName} (${email})`,
-      }),
-    })
-
-    if (!slackResponse.ok) {
-      console.error('Slack notification failed:', slackResponse.status)
-      throw new Error(`Slack notification failed: ${slackResponse.status}`)
-    }
-
-    // Step 6: Record successful notification delivery
-    if (eventId) {
-      await db.sentNotifications.upsert({
-        where: { eventId },
-        create: { eventId, emailSent: true, slackSent: true },
-        update: { emailSent: true, slackSent: true },
+    // Step 4b: Send welcome email (only if email available and not already sent)
+    if (email && !existingEmailSent) {
+      // Escape user-provided name to prevent HTML injection
+      const escapedName = name
+        .replace(/&/g, '&')
+        .replace(/</g, '<')
+        .replace(/>/g, '>')
+        .replace(/"/g, '"')
+        .replace(/'/g, ''')
+      
+      const emailResult = await resend.emails.send({
+        from: 'noreply@yourdomain.com',
+        to: email,
+        subject: 'Welcome!',
+        html: `<p>Hi ${escapedName}, welcome to our app!</p>`,
       })
+
+      if (emailResult.error) {
+        console.error('Resend email failed:', emailResult.error)
+        throw new Error(`Email send failed: ${emailResult.error?.message}`)
+      }
+
+      // Record email delivery immediately
+      if (eventId) {
+        await db.sentNotifications.upsert({
+          where: { eventId },
+          create: { eventId, emailSent: true, slackSent: existingSlackSent },
+          update: { emailSent: true },
+        })
+      }
+    } else if (!email) {
+      console.log(`No primary email for user ${id}, skipping email notification`)
+    } else if (existingEmailSent) {
+      console.log(`Email already sent for event ${eventId}, skipping`)
+    }
+
+    // Step 5: Post notification to Slack channel (only if not already sent)
+    if (!existingSlackSent) {
+      const slackResponse = await fetch(process.env.SLACK_WEBHOOK_URL!, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: `New user signed up: ${name} (${email ?? 'no email'})`,
+        }),
+      })
+
+      if (!slackResponse.ok) {
+        console.error('Slack notification failed:', slackResponse.status)
+        throw new Error(`Slack notification failed: ${slackResponse.status}`)
+      }
+
+      // Record Slack delivery immediately
+      if (eventId) {
+        await db.sentNotifications.upsert({
+          where: { eventId },
+          create: { eventId, emailSent: existingEmailSent || !!email, slackSent: true },
+          update: { slackSent: true },
+        })
+      }
+    } else {
+      console.log(`Slack already sent for event ${eventId}, skipping`)
     }
   }
 

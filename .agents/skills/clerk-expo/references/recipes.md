@@ -52,10 +52,12 @@ const loadMore = () => {
 // {memberships.map((m) => m.organization)}
 // {hasMore && <Button onPress={loadMore}>Load more</Button>}
 
-// Or fetch all pages before displaying:
-// useEffect(() => { 
-//   while (userMemberships.hasNextPage) await userMemberships.fetchNext() 
-// }, [userMemberships])
+// Or fetch all pages before displaying (page-aware pagination):
+// useEffect(() => {
+//   if (userMemberships.hasNextPage) {
+//     userMemberships.fetchNext()
+//   }
+// }, [userMemberships.data, userMemberships.hasNextPage])
 ```
 
 ## Calling your backend
