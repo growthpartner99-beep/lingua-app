@@ -69,13 +69,13 @@ export async function POST(req: NextRequest) {
     const email = emailObj?.email_address
     const name = `${first_name ?? ''} ${last_name ?? ''}`.trim()
     
-    // Upsert: if user exists from a previous create, skip duplicate; if deleted, don't recreate
+    // Upsert with timestamp guard: create if missing, but reject if newer row already exists
     await db.users.upsert({
       where: { clerkId: id },
       create: { clerkId: id, email, name, deletedAt: null, eventTimestamp: evt.timestamp },
       update: (existing) => 
         existing.deletedAt || (existing.eventTimestamp >= evt.timestamp)
-          ? {} // Skip if deleted or event is older than stored
+          ? {} // Skip if deleted or event is older/equal than stored
           : { email, name, deletedAt: null, eventTimestamp: evt.timestamp },
     })
   }
@@ -84,15 +84,17 @@ export async function POST(req: NextRequest) {
     const { id, email_addresses, primary_email_address_id, first_name, last_name } = evt.data
     const emailObj = email_addresses.find(e => e.id === primary_email_address_id)
     const email = emailObj?.email_address
+    const name = `${first_name ?? ''} ${last_name ?? ''}`.trim()
     
-    // Atomic conditional update: only update if user exists, not deleted, and event is newer
-    await db.users.updateMany({
-      where: {
-        clerkId: id,
-        deletedAt: null,
-        eventTimestamp: { lt: evt.timestamp },
-      },
-      data: { email, first_name, last_name, eventTimestamp: evt.timestamp },
+    // Timestamp-guarded upsert: create if missing (handles out-of-order delivery), 
+    // only update if event is newer than stored timestamp
+    await db.users.upsert({
+      where: { clerkId: id },
+      create: { clerkId: id, email, name, deletedAt: null, eventTimestamp: evt.timestamp },
+      update: (existing) => 
+        existing.deletedAt || (existing.eventTimestamp >= evt.timestamp)
+          ? {} // Skip if deleted or event is older/equal than stored
+          : { email, name, deletedAt: null, eventTimestamp: evt.timestamp },
     })
   }
 
@@ -175,7 +177,7 @@ export async function POST(req: NextRequest) {
         .replace(/</g, '<')
         .replace(/>/g, '>')
         .replace(/"/g, '"')
-        .replace(/'/g, ''')
+        .replace(/'/g, &#39;)
       
       const emailResult = await resend.emails.send({
         from: 'noreply@yourdomain.com',
@@ -430,6 +432,10 @@ Add the printed relay URL (`https://webhooks.clerk.com/in/c_.../`) as a webhook 
 - `clerk-orgs` - Org membership events
 - `clerk-billing` - Subscription, subscription item, and payment attempt events
 - `clerk-backend-api` - Sync via direct API calls
+
+
+
+
 
 
 
