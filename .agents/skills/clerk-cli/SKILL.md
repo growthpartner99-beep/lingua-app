@@ -88,16 +88,25 @@ Yarn Classic (v1) has no `dlx`; treat those projects as "no preferred runner" an
 
 The published npm package is **`clerk`**, not `@clerk/cli`. Never teach `npm install -g clerk` as the primary path. If the global CLI is stale or behaves differently from this skill, either upgrade the global install or fall back to the `latest` runner form above.
 
-## Prerequisites (run at session start for non-setup operations)
+## Prerequisites
 
-Except when following `clerk-setup`, verify the CLI is authenticated, linked, and healthy before running other Clerk commands in a session:
+**Commands that require authentication and project linking:**
+Most Clerk commands (`setup`, `apps`, `instance configure`, etc.) require you to be logged in and have a project linked. Start with:
 
 ```sh
 clerk --version               # confirm the binary is on PATH
 clerk doctor --json           # structured health check; exit 1 if anything failed
 ```
 
-**Always run `clerk doctor --json` first.** It catches the common setup failures (not logged in, project not linked, missing keys, stale CLI version) up front, so later commands don't fail with confusing errors. In agent mode it also includes a `Host execution` check that warns when Clerk's host-side config / credential directories are not writable, which is the canonical signal that the current invocation is likely sandboxed.
+**Commands that work with a local secret key only (no login/linking required):**
+API and data operations can use a local `CLERK_SECRET_KEY` (sk_) without account login or project linking:
+- `clerk users list` — list/search/manage users via API
+- `clerk api` — make authenticated Backend API calls directly
+- `clerk org enable` / `clerk org disable` — toggle org features
+
+For these commands, `clerk doctor` is still useful as a diagnostic, but not required.
+
+**Always run `clerk doctor --json` when things seem broken.** It catches setup failures (not logged in, project not linked, missing keys, stale CLI version) with structured output. In agent mode it also includes a `Host execution` check that warns when Clerk's host-side config is not writable (sandboxed environment signal).
 
 Each result has `name`, `status` (`pass`/`warn`/`fail`), `message`, optional `detail`, optional `remedy` (how to fix it), and optional `fix` (label for auto-fixable issues). Parse that and act on it, or surface it to the user. If `Host execution` warns, rerun the command on the host before trusting any auth/link/env/API failures from the same sandboxed run. Rerun `clerk doctor --json` whenever a later command starts misbehaving.
 

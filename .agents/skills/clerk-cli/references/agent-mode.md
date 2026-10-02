@@ -287,7 +287,7 @@ All three remediation commands are themselves interactive by default: `auth logi
 - **Don't assume an unclaimed app means a throwaway app.** The CLI follows the local `sk_` key, `sk_live_` included — in an unlinked repo holding a production key, `enable orgs` / `config patch` mutate production unconfirmed. Pass `--app <id>` when you mean a real app.
 - **Don't assume `clerk auth login` is fully unattended from an agent** - it opens a browser and waits for a callback. Prefer `CLERK_PLATFORM_API_KEY` for headless automation. `clerk init --app <id>` or init in an already linked project may still invoke the normal login fallback when a real app target is explicit.
 - **Don't call `clerk link` without `--app` and assume the agent can pick for you** - it only succeeds when silent autolink can determine the app from detected keys.
-- **Don't run `clerk unlink` in agent mode without `--yes`** - it exits with a usage error instead of prompting.
-- **Don't run `clerk config put` without `--dry-run` first** - it's a full replacement and is destructive.
-- **Don't skip `--yes` on mutations and expect them to work** - agent mode disables prompts, so commands that require confirmation will error.
+- **Don't run `clerk unlink` in agent mode without `--yes`** - it's the only mutation requiring explicit confirmation in agent mode; `--yes` skips the confirmation prompt.
+- **Mutations run without prompts in agent mode** - commands like `clerk config patch`, `clerk org enable`, and `clerk users update` run immediately. Use `--dry-run` to preview changes before applying them with a separate run.
+- **Don't skip `--dry-run` on destructive mutations** - commands like `clerk config put` (full replacement) should be previewed first with `--dry-run` to avoid accidental data loss.
 - **Don't leak secret keys into logs** - the CLI never prints the raw secret key, and you shouldn't either.

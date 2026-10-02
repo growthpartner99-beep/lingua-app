@@ -33,13 +33,20 @@ clerk users list --email-address alice@example.com
 clerk users open user_abc123
 clerk users open user_abc123 --print     # print the URL instead of opening
 
-# Create a user (preferred; curated flags)
+# Create a user — preview with --dry-run first
 clerk users create \
   --email alice@example.com \
   --password 'SuperSecret123!' \
   --first-name Alice \
   --last-name Doe \
-  --yes
+  --dry-run
+
+# Apply the changes (run the same command without --dry-run)
+clerk users create \
+  --email alice@example.com \
+  --password 'SuperSecret123!' \
+  --first-name Alice \
+  --last-name Doe
 
 # Equivalent raw BAPI call. Use only when curated flags don't cover a field.
 clerk api /users -d '{
@@ -320,12 +327,19 @@ jq -n '{email_address:["c@d.co"]}' | clerk api /users
 ### Loop safely
 
 ```sh
-# Always --dry-run first across the whole set. `users list` paginates;
-# bump --limit (max 250) and walk pages with --offset until .hasMore is false.
-for id in $(clerk users list --json --limit 250 | jq -r '.data[] | .id'); do
-  clerk api /users/$id -X PATCH -d '{"public_metadata":{"migrated":true}}' --dry-run
+# Always --dry-run first across ALL pages. `users list` paginates;
+# fetch pages and increment offset until hasMore is false.
+offset=0
+while true; do
+  result=$(clerk users list --json --limit 250 --offset $offset)
+  for id in $(echo "$result" | jq -r '.data[] | .id'); do
+    clerk api /users/$id -X PATCH -d '{"public_metadata":{"migrated":true}}' --dry-run
+  done
+  hasMore=$(echo "$result" | jq -r '.hasMore')
+  if [ "$hasMore" = "false" ]; then break; fi
+  offset=$((offset + 250))
 done
-# Re-run without --dry-run once the previews look right
+# Re-run without --dry-run once the previews look right - same loop structure
 ```
 
 ### Target multiple instances
