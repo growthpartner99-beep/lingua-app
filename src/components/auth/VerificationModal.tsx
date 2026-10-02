@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   KeyboardAvoidingView,
   Modal,
@@ -28,6 +28,7 @@ export function VerificationModal({
   onVerified,
 }: VerificationModalProps) {
   const [code, setCode] = useState("");
+  const onVerifiedRef = useRef(onVerified);
 
   const handleClose = () => {
     setCode("");
@@ -35,10 +36,17 @@ export function VerificationModal({
   };
 
   useEffect(() => {
+    onVerifiedRef.current = onVerified;
+  }, [onVerified]);
+
+  useEffect(() => {
     if (code.length < CODE_LENGTH) return;
-    const timer = setTimeout(onVerified, 250);
+    const timer = setTimeout(() => {
+      setCode("");
+      onVerifiedRef.current();
+    }, 250);
     return () => clearTimeout(timer);
-  }, [code, onVerified]);
+  }, [code]);
 
   const handleChange = (raw: string) => {
     setCode(raw.replace(/[^0-9]/g, "").slice(0, CODE_LENGTH));

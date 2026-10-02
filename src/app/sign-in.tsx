@@ -7,10 +7,12 @@ import { AuthMascot } from "@/components/auth/AuthMascot";
 import { AuthTextInput } from "@/components/auth/AuthTextInput";
 import { SocialAuthButtons } from "@/components/auth/SocialAuthButtons";
 import { VerificationModal } from "@/components/auth/VerificationModal";
+import { isValidEmail } from "@/lib/validation";
 
 export default function SignInScreen() {
   const [email, setEmail] = useState("");
   const [verificationVisible, setVerificationVisible] = useState(false);
+  const canContinue = isValidEmail(email);
 
   const handleBack = () => {
     if (router.canGoBack()) {
@@ -59,8 +61,13 @@ export default function SignInScreen() {
 
           <TouchableOpacity
             activeOpacity={0.85}
-            onPress={() => setVerificationVisible(true)}
-            className="mt-4 h-[60px] items-center justify-center rounded-[16px] bg-primary-purple"
+            disabled={!canContinue}
+            onPress={() => {
+              if (canContinue) setVerificationVisible(true);
+            }}
+            className={`mt-4 h-[60px] items-center justify-center rounded-[16px] bg-primary-purple ${
+              canContinue ? "" : "opacity-50"
+            }`}
           >
             <Text className="font-poppins-semibold text-[17px] text-text-on-accent">
               Sign In
