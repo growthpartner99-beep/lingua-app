@@ -1,10 +1,14 @@
-import { Redirect, router } from "expo-router";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { useAuth, useUser } from "@clerk/expo";
+import { Redirect } from "expo-router";
+import { Text, View } from "react-native";
+import { useAuth } from "@clerk/expo";
+import { useLanguageStore } from "@/store/language";
 
 export default function Index() {
-  const { isLoaded, isSignedIn, signOut } = useAuth();
-  const { user } = useUser();
+  const { isLoaded, isSignedIn } = useAuth();
+  const hasHydrated = useLanguageStore((state) => state._hasHydrated);
+  const hasSelectedLanguage = useLanguageStore(
+    (state) => state.hasSelectedLanguage
+  );
 
   if (!isLoaded) {
     return (
@@ -20,51 +24,17 @@ export default function Index() {
     return <Redirect href="/onboarding" />;
   }
 
-  return (
-    <View style={styles.container}>
-      <Text className="font-poppins-medium text-[16px] text-text-primary">
-        hello, {user?.firstName || user?.username || "there"}!
-      </Text>
-      <Text className="mt-2 font-poppins-regular text-[14px] text-text-secondary">
-        {user?.primaryEmailAddress?.emailAddress}
-      </Text>
-      <TouchableOpacity
-        activeOpacity={0.85}
-        onPress={() => router.push("/onboarding")}
-        className="mt-4 items-center rounded-2xl bg-primary-purple px-6 py-4"
-      >
-        <Text className="font-poppins-semibold text-[16px] text-text-on-accent">
-          Open onboarding
-        </Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        activeOpacity={0.85}
-        onPress={() => router.push("/language-selection")}
-        className="mt-4 items-center rounded-2xl border border-border-default px-6 py-4"
-      >
-        <Text className="font-poppins-semibold text-[16px] text-text-primary">
-          Choose a language
-        </Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        activeOpacity={0.85}
-        onPress={() => {
-          signOut();
-        }}
-        className="mt-4 items-center rounded-2xl border border-border-default px-6 py-4"
-      >
-        <Text className="font-poppins-semibold text-[16px] text-text-primary">
-          Sign Out
-        </Text>
-      </TouchableOpacity>
-    </View>
-  );
+  if (hasHydrated && !hasSelectedLanguage) {
+    return <Redirect href="/language-selection" />;
+  }
+
+  return <Redirect href="/home" />;
 }
 
-const styles = StyleSheet.create({
+const styles = {
   container: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: "center" as const,
+    justifyContent: "center" as const,
   },
-});
+};

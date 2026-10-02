@@ -5,7 +5,9 @@ import type { LanguageId } from "@/types/learning";
 
 interface LanguageState {
   selectedLanguage: LanguageId;
+  hasSelectedLanguage: boolean;
   setSelectedLanguage: (languageId: LanguageId) => void;
+  clearLanguageSelection: () => void;
   _hasHydrated: boolean;
   _setHasHydrated: (hasHydrated: boolean) => void;
 }
@@ -14,7 +16,11 @@ export const useLanguageStore = create<LanguageState>()(
   persist(
     (set) => ({
       selectedLanguage: "es",
-      setSelectedLanguage: (languageId) => set({ selectedLanguage: languageId }),
+      hasSelectedLanguage: false,
+      setSelectedLanguage: (languageId) =>
+        set({ selectedLanguage: languageId, hasSelectedLanguage: true }),
+      clearLanguageSelection: () =>
+        set({ selectedLanguage: "es", hasSelectedLanguage: false }),
       _hasHydrated: false,
       _setHasHydrated: (hasHydrated) => set({ _hasHydrated: hasHydrated }),
     }),

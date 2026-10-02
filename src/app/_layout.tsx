@@ -14,7 +14,9 @@ export default function RootLayout() {
   return (
     <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
       <FontLoader>
-        <Stack />
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        </Stack>
       </FontLoader>
     </ClerkProvider>
   );
