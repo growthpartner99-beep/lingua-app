@@ -65,6 +65,8 @@ export default function SignUpScreen() {
       }
 
       setVerificationVisible(true);
+    } catch (err) {
+      setError(getErrorMessage(err));
     } finally {
       setSubmitting(false);
     }
@@ -76,6 +78,15 @@ export default function SignUpScreen() {
     });
 
     if (verifyError) return getErrorMessage(verifyError);
+
+    if (signUp.status === "missing_requirements") {
+      // TODO: Route to missing fields form to collect additional info
+      return "Additional information required. Feature coming soon.";
+    }
+
+    if (signUp.status !== "complete") {
+      return "We could not complete your sign-up. Please try again.";
+    }
 
     const { error: finalizeError } = await signUp.finalize();
 

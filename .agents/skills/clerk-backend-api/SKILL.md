@@ -94,7 +94,7 @@ const invitation = await clerkClient.organizations.createOrganizationInvitation(
 **For `plan: 'pro'` and `onboarded: true` — use `public_metadata`** (frontend-readable, server-writable):
 
 ```bash
-curl -s -X PATCH "https://api.clerk.com/v1/users/${USER_ID}" \
+curl -s -X PATCH "https://api.clerk.com/v1/users/${USER_ID}/metadata" \
   -H "Authorization: Bearer $CLERK_SECRET_KEY" \
   -H "Content-Type: application/json" \
   -d '{"public_metadata": {"plan": "pro", "onboarded": true}}' \
@@ -107,7 +107,7 @@ curl -s -X PATCH "https://api.clerk.com/v1/users/${USER_ID}" \
 import { clerkClient } from '@clerk/nextjs/server'
 // OR: import { createClerkClient } from '@clerk/backend'
 
-await clerkClient.users.updateUser(userId, {
+await clerkClient.users.updateUserMetadata(userId, {
   publicMetadata: { plan: 'pro', onboarded: true },   // readable by client, writable server-only
   // privateMetadata: { stripeId: 'cus_xxx' },         // server-only read AND write
   // unsafeMetadata: { step: 'welcome' },              // client-writable, avoid sensitive data
@@ -119,7 +119,7 @@ await clerkClient.users.updateUser(userId, {
 ### List users (last 7 days)
 
 ```bash
-curl -s "https://api.clerk.com/v1/users?limit=100&offset=0&order_by=-created_at&created_at=gt:$(date -d '7 days ago' +%s 2>/dev/null || date -v-7d +%s)000" \
+curl -s "https://api.clerk.com/v1/users?limit=100&offset=0&order_by=-created_at&created_at_after=$(date -d '7 days ago' +%s 2>/dev/null || date -v-7d +%s)000" \
   -H "Authorization: Bearer $CLERK_SECRET_KEY" \
   | python3 -c "
 import sys, json
@@ -139,7 +139,7 @@ else:
 # ONLY run after explicit user confirmation
 curl -s -X DELETE "https://api.clerk.com/v1/users/${USER_ID}" \
   -H "Authorization: Bearer $CLERK_SECRET_KEY" \
-  | python3 -c "import sys,json; d=json.load(sys.stdin); print(f'Deleted: {d}')"
+  | python3 -c "import sys,json; d=json.load(sys.stdin); print(f'Deleted: {d[\"id\"]}') if d.get('id') else print('Deletion failed')"
 ```
 
 ---
@@ -273,23 +273,20 @@ Use the output to determine the latest version and available tags.
 
 `currentUser()` makes a real API call that counts against rate limits. Use `auth()` for just the session claims — it reads from the token without an API call.
 
-### Metadata Overwrites (Not Merges)
+### Metadata Behavior (PATCH Deep-Merges)
 
-`updateUser({ publicMetadata: { role: 'admin' } })` REPLACES all public metadata, not merges. To add a field without losing existing data: read first, spread, then write.
+For the default Clerk API version (2026-05-12), the PATCH endpoint used by `updateUserMetadata()` **deep-merges** metadata fields — it adds or updates fields without deleting existing ones.
 
-Wrong:
+To add a single metadata field:
 ```typescript
-await clerkClient.users.updateUser(userId, { publicMetadata: { newField: 'value' } })
-```
-This DELETES all other `publicMetadata` fields.
+import { clerkClient } from '@clerk/nextjs/server'
 
-Right:
-```typescript
-const user = await clerkClient.users.getUser(userId)
-await clerkClient.users.updateUser(userId, {
-  publicMetadata: { ...user.publicMetadata, newField: 'value' },
+await clerkClient.users.updateUserMetadata(userId, {
+  publicMetadata: { newField: 'value' }  // Merged with existing fields, not replaced
 })
 ```
+
+**Note:** Older API versions use PUT, which replaces the entire metadata field. Use `updateUserMetadata()` to avoid version-specific behavior.
 
 ---
 

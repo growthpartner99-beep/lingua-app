@@ -55,6 +55,8 @@ export default function SignInScreen() {
       }
 
       setVerificationVisible(true);
+    } catch (err) {
+      setError(getErrorMessage(err));
     } finally {
       setSubmitting(false);
     }
@@ -64,6 +66,16 @@ export default function SignInScreen() {
     const { error: verifyError } = await signIn.emailCode.verifyCode({ code });
 
     if (verifyError) return getErrorMessage(verifyError);
+
+    if (signIn.status === "needs_second_factor") {
+      // TODO: Route to second factor screen (MFA, backup code, etc.)
+      return "Second factor required. Feature coming soon.";
+    }
+
+    if (signIn.status === "needs_client_trust") {
+      // TODO: Route to client trust verification
+      return "Device verification required. Feature coming soon.";
+    }
 
     if (signIn.status !== "complete") {
       return "We could not finish signing you in. Please try again.";

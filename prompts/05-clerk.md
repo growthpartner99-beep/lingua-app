@@ -4,7 +4,7 @@ Study the existing auth screens and current mocked auth flow, then replace the m
 
 Keep the existing UI and navigation flow intact. Implement email-based Sign Up, Sign In, social auth where supported, and verification code handling through Clerk.
 
-After successful verification/authentication, navigate to the home route (/). If not authenticated, show onboarding route (/onboarding(. If authenticated, show home route (/).
+After successful verification/authentication, navigate to the home route (/). If not authenticated, show onboarding route (/onboarding). If authenticated, show home route (/).
 
 Do not change the screen design. If there is any need, ask me before implementation
 
@@ -419,7 +419,7 @@ This approach uses Clerk's [prebuilt native components](https://clerk.com/docs/e
    Then use the terminal shortcuts to run the app on your preferred platform:
    - Press `i` to open the iOS simulator.
    - Press `a` to open the Android emulator.
-   - Scan the QR code with Expo Go to run the app on a physical device.
+   - Open your development build on a physical device.
 
 10. ## Create your first user
 

@@ -28,6 +28,9 @@ export function useSocialAuth() {
       if (createdSessionId && setActive) {
         await setActive({ session: createdSessionId });
         router.dismissTo("/");
+      } else if (!createdSessionId) {
+        // Sign-up may require additional fields
+        setError("Additional information required. Feature coming soon.");
       }
     } catch (err) {
       setError(getErrorMessage(err));

@@ -11,6 +11,7 @@ import {
   View,
 } from "react-native";
 import { FontAwesome5 } from "@expo/vector-icons";
+import { getErrorMessage } from "@/lib/clerk";
 
 type VerificationModalProps = {
   visible: boolean;
@@ -50,14 +51,19 @@ export function VerificationModal({
       verifyingRef.current = true;
       setVerifying(true);
 
-      const message = await onVerifyRef.current(code);
+      try {
+        const message = await onVerifyRef.current(code);
 
-      verifyingRef.current = false;
-      setVerifying(false);
-
-      if (message) {
-        setError(message);
+        if (message) {
+          setError(message);
+          setCode("");
+        }
+      } catch (err) {
+        setError(getErrorMessage(err));
         setCode("");
+      } finally {
+        verifyingRef.current = false;
+        setVerifying(false);
       }
     }, 250);
 
