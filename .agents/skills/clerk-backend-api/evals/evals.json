@@ -32,11 +32,11 @@
     {
       "id": 3,
       "prompt": "i need to set custom metadata on a user via clerk's backend api. set their plan to 'pro' and onboarded to true",
-      "expected_output": "PATCH /v1/users/{user_id} with public_metadata or private_metadata body, explanation of metadata types and when to use each",
+      "expected_output": "PATCH /v1/users/{user_id}/metadata with public_metadata body, explanation of metadata types and when to use each",
       "scaffold": "nextjs-basic-auth",
       "files": [],
       "expectations": [
-        "Uses PATCH /v1/users/{user_id} endpoint",
+        "Uses PATCH /v1/users/{user_id}/metadata endpoint",
         "Sets the metadata in the correct field: public_metadata, private_metadata, or unsafe_metadata",
         "Explains the difference between metadata types (client-readable vs server-only vs client-writable)",
         "Includes a properly formed JSON body with the plan and onboarded fields",

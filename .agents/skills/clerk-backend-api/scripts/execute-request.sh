@@ -45,19 +45,36 @@ SCOPES="${CLERK_BAPI_SCOPES:-}"
 
 # Scope check
 if [[ "$ADMIN" == false ]]; then
+  # Split comma-separated scopes into array
+  IFS=',' read -ra SCOPES_ARRAY <<< "$SCOPES"
+  
   case "$METHOD_UPPER" in
     GET)
       ;; # always allowed
     POST|PUT|PATCH)
-      if [[ "$SCOPES" != *"write"* ]]; then
-        echo "ERROR: $METHOD_UPPER requests require CLERK_BAPI_SCOPES=\"write\" or --admin flag." >&2
+      has_write=false
+      for scope in "${SCOPES_ARRAY[@]}"; do
+        if [[ "$(echo "$scope" | xargs)" == "write" ]]; then
+          has_write=true
+          break
+        fi
+      done
+      if [[ "$has_write" != true ]]; then
+        echo "ERROR: $METHOD_UPPER requests require CLERK_BAPI_SCOPES to contain \"write\" or --admin flag." >&2
         echo "Current CLERK_BAPI_SCOPES: \"$SCOPES\"" >&2
         exit 1
       fi
       ;;
     DELETE)
-      if [[ "$SCOPES" != *"write"* ]] || [[ "$SCOPES" != *"delete"* ]]; then
-        echo "ERROR: DELETE requests require CLERK_BAPI_SCOPES=\"write,delete\" or --admin flag." >&2
+      has_delete=false
+      for scope in "${SCOPES_ARRAY[@]}"; do
+        if [[ "$(echo "$scope" | xargs)" == "delete" ]]; then
+          has_delete=true
+          break
+        fi
+      done
+      if [[ "$has_delete" != true ]]; then
+        echo "ERROR: DELETE requests require CLERK_BAPI_SCOPES to contain \"delete\" or --admin flag." >&2
         echo "Current CLERK_BAPI_SCOPES: \"$SCOPES\"" >&2
         exit 1
       fi

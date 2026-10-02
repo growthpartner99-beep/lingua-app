@@ -127,7 +127,10 @@ data = json.load(sys.stdin)
 if isinstance(data, list):
     print(f'Found {len(data)} users:')
     for u in data:
-        print(f'  {u[\"id\"]}: {u.get(\"email_addresses\", [{}])[0].get(\"email_address\", \"no email\")}')
+        email = 'no email'
+        if u.get('email_addresses'):
+            email = u['email_addresses'][0].get('email_address', 'no email')
+        print(f'  {u[\"id\"]}: {email}')
 else:
     print(json.dumps(data, indent=2))
 "
@@ -410,7 +413,10 @@ data = json.load(sys.stdin)
 if isinstance(data, list):
     print(f'Found {len(data)} users:')
     for u in data:
-        print(f'  {u[\"id\"]}: {u.get(\"email_addresses\", [{}])[0].get(\"email_address\", \"no email\")}')
+        email = 'no email'
+        if u.get('email_addresses'):
+            email = u['email_addresses'][0].get('email_address', 'no email')
+        print(f'  {u[\"id\"]}: {email}')
 else:
     print(json.dumps(data, indent=2))
 "
