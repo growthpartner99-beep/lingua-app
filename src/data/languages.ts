@@ -8,6 +8,7 @@ export const languages: Language[] = [
     flag: "🇪🇸",
     description: "Order food, meet people, and get around with the world's second native language.",
     accentColor: "#FF5A5F",
+    learners: "28.4M",
   },
   {
     id: "fr",
@@ -16,6 +17,7 @@ export const languages: Language[] = [
     flag: "🇫🇷",
     description: "Say bonjour, introduce yourself, and sound natural from day one.",
     accentColor: "#4D8BFF",
+    learners: "19.4M",
   },
   {
     id: "ja",
@@ -24,6 +26,7 @@ export const languages: Language[] = [
     flag: "🇯🇵",
     description: "Master greetings and self-introductions in one of the world's most beautiful languages.",
     accentColor: "#FF4D4F",
+    learners: "12.7M",
   },
 ];
 

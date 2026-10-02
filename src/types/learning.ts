@@ -19,6 +19,8 @@ export interface Language {
   description: string;
   /** Accent color for the language card UI (theme token hex) */
   accentColor: string;
+  /** Approximate learner count shown in the language picker, e.g. "28.4M" */
+  learners: string;
 }
 
 export interface Unit {
