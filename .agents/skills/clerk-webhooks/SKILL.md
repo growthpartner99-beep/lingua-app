@@ -68,19 +68,42 @@ export async function POST(req: NextRequest) {
     const emailObj = email_addresses.find(e => e.id === primary_email_address_id)
     const email = emailObj?.email_address
     const name = `${first_name ?? ''} ${last_name ?? ''}`.trim()
-    await db.users.create({ data: { clerkId: id, email, name } })
+    
+    // Upsert: if user exists from a previous create, skip duplicate; if deleted, don't recreate
+    await db.users.upsert({
+      where: { clerkId: id },
+      create: { clerkId: id, email, name, deletedAt: null, eventTimestamp: evt.created_at },
+      update: (existing) => 
+        existing.deletedAt || (existing.eventTimestamp >= evt.created_at)
+          ? {} // Skip if deleted or event is older than stored
+          : { email, name, deletedAt: null, eventTimestamp: evt.created_at },
+    })
   }
 
   if (evt.type === 'user.updated') {
     const { id, email_addresses, primary_email_address_id, first_name, last_name } = evt.data
     const emailObj = email_addresses.find(e => e.id === primary_email_address_id)
     const email = emailObj?.email_address
-    await db.users.update({ where: { clerkId: id }, data: { email, first_name, last_name } })
+    
+    // Only update if event is newer than stored timestamp, and user is not soft-deleted
+    await db.users.update({
+      where: { clerkId: id },
+      data: { email, first_name, last_name, eventTimestamp: evt.created_at },
+      // Guard: only update if not deleted AND event is newer
+      ...(await db.users.findUnique({ where: { clerkId: id } }).then(u =>
+        u?.deletedAt || u?.eventTimestamp >= evt.created_at ? { skip: true } : {}
+      )),
+    })
   }
 
   if (evt.type === 'user.deleted') {
     const { id } = evt.data
-    await db.users.delete({ where: { clerkId: id } })
+    
+    // Soft-delete: mark with timestamp instead of removing, prevents older events from recreating
+    await db.users.update({
+      where: { clerkId: id },
+      data: { deletedAt: new Date(), eventTimestamp: evt.created_at },
+    })
   }
 
   if (evt.type === 'organizationMembership.created') {
@@ -126,11 +149,24 @@ export async function POST(req: NextRequest) {
   // Step 2: Listen for user.created event
   if (evt.type === 'user.created') {
     // Step 3: Extract user email and name from webhook payload
-    const { id, email_addresses, first_name, last_name } = evt.data
+    const { id, email_addresses, primary_email_address_id, first_name, last_name } = evt.data
+    const emailObj = email_addresses.find(e => e.id === primary_email_address_id)
     const email = emailObj?.email_address
     const name = `${first_name ?? ''} ${last_name ?? ''}`.trim()
 
-    // Step 4: Call Resend API to send welcome email
+    // Step 4a: Check if this notification was already sent (use svix-id for idempotency)
+    const eventId = req.headers.get('svix-id')
+    if (eventId) {
+      const existing = await db.sentNotifications.findUnique({
+        where: { eventId },
+      })
+      if (existing?.emailSent) {
+        console.log(`Notification already sent for event ${eventId}, skipping`)
+        return new Response('OK', { status: 200 })
+      }
+    }
+
+    // Step 4b: Call Resend API to send welcome email
     // Escape user-provided name to prevent HTML injection
     const escapedName = name
       .replace(/&/g, '&amp;')
@@ -163,6 +199,15 @@ export async function POST(req: NextRequest) {
     if (!slackResponse.ok) {
       console.error('Slack notification failed:', slackResponse.status)
       throw new Error(`Slack notification failed: ${slackResponse.status}`)
+    }
+
+    // Step 6: Record successful notification delivery
+    if (eventId) {
+      await db.sentNotifications.upsert({
+        where: { eventId },
+        create: { eventId, emailSent: true, slackSent: true },
+        update: { emailSent: true, slackSent: true },
+      })
     }
   }
 
@@ -212,14 +257,9 @@ export async function POST(req: NextRequest) {
     const orgId = organization.id
     const userId = public_user_data.user_id
 
-    // Add to team_members table
+    // Add to team_members table to track membership
     await db.team_members.create({
       data: { orgId, userId, role },
-    })
-
-    // Create workspace record for new member
-    await db.workspaces.create({
-      data: { orgId, userId, createdAt: new Date() },
     })
   }
 
