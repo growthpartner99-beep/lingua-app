@@ -177,7 +177,7 @@ export async function POST(req: NextRequest) {
         .replace(/</g, '<')
         .replace(/>/g, '>')
         .replace(/"/g, '"')
-        .replace(/'/g, &#39;)
+        .replace(/'/g, '&apos;')
       
       const emailResult = await resend.emails.send({
         from: 'noreply@yourdomain.com',
@@ -432,6 +432,11 @@ Add the printed relay URL (`https://webhooks.clerk.com/in/c_.../`) as a webhook 
 - `clerk-orgs` - Org membership events
 - `clerk-billing` - Subscription, subscription item, and payment attempt events
 - `clerk-backend-api` - Sync via direct API calls
+
+
+
+
+
 
 
 

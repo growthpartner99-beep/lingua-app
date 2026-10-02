@@ -7,6 +7,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -14,19 +15,35 @@ import { Feather } from "@expo/vector-icons";
 import { images } from "@/constants/images";
 import { languages } from "@/data/languages";
 import type { Language, LanguageId } from "@/types/learning";
+import { useLanguageStore } from "@/store/language";
 
 export default function LanguageSelectionScreen() {
   const [query, setQuery] = useState("");
-  const [selectedId, setSelectedId] = useState<LanguageId>("es");
+  const { width: windowWidth } = useWindowDimensions();
+  const selectedLanguage = useLanguageStore((state) => state.selectedLanguage);
+  const setSelectedLanguage = useLanguageStore((state) => state.setSelectedLanguage);
+  const hasHydrated = useLanguageStore((state) => state._hasHydrated);
+  const [localSelectedId, setLocalSelectedId] = useState<LanguageId>("es");
+  const [userHasInteracted, setUserHasInteracted] = useState(false);
+
+  const selectedId = hasHydrated && !userHasInteracted ? selectedLanguage : localSelectedId;
+
+  const handleLanguagePress = (languageId: LanguageId) => {
+    setLocalSelectedId(languageId);
+    setUserHasInteracted(true);
+  };
+
+  const removeDiacritics = (str: string) =>
+    str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
   const filteredLanguages = useMemo(() => {
-    const normalized = query.trim().toLowerCase();
+    const normalized = removeDiacritics(query.trim().toLowerCase());
     if (!normalized) return languages;
 
     return languages.filter(
       (language) =>
-        language.name.toLowerCase().includes(normalized) ||
-        language.nativeName.toLowerCase().includes(normalized)
+        removeDiacritics(language.name.toLowerCase()).includes(normalized) ||
+        removeDiacritics(language.nativeName.toLowerCase()).includes(normalized)
     );
   }, [query]);
 
@@ -39,17 +56,24 @@ export default function LanguageSelectionScreen() {
   };
 
   const handleConfirm = () => {
-    // Selected language persistence lands with the Zustand store feature.
+    setSelectedLanguage(selectedId);
     handleBack();
   };
 
   const isSearching = query.trim().length > 0;
+
+  // earth.png is a 1254x1254 square, but the illustration inside it only
+  // spans y216-1038. We show exactly that content strip flush at the bottom.
+  const earthFooterHeight = windowWidth / 1.5255;
+  const earthImageSize = windowWidth;
+  const earthImageOffset = -windowWidth * 0.1723;
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <Stack.Screen options={{ headerShown: false }} />
 
       <ScrollView
+        className="flex-1"
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
       >
@@ -82,18 +106,18 @@ export default function LanguageSelectionScreen() {
           </View>
 
           {!isSearching && (
-            <Text className="mt-6 font-poppins-semibold text-[17px] text-text-primary">
+            <Text className="mt-5 font-poppins-semibold text-[17px] text-text-primary">
               Popular
             </Text>
           )}
 
-          <View className="mt-3 space-y-3">
+          <View className="mt-4 flex flex-col gap-1">
             {filteredLanguages.map((language) => (
               <LanguageCard
                 key={language.id}
                 language={language}
                 selected={language.id === selectedId}
-                onPress={() => setSelectedId(language.id)}
+                onPress={() => handleLanguagePress(language.id)}
               />
             ))}
 
@@ -107,22 +131,28 @@ export default function LanguageSelectionScreen() {
           <TouchableOpacity
             activeOpacity={0.85}
             onPress={handleConfirm}
-            className="mt-6 h-[60px] items-center justify-center rounded-2xl bg-primary-purple"
+            className="mt-5 h-[60px] items-center justify-center rounded-[20px] bg-primary-purple"
           >
             <Text className="font-poppins-semibold text-[17px] text-text-on-accent">
               Confirm
             </Text>
           </TouchableOpacity>
         </View>
-
-        <View className="mt-8 h-[230px] w-full overflow-hidden">
-          <Image
-            source={images.earth}
-            resizeMode="cover"
-            style={styles.earthImage}
-          />
-        </View>
       </ScrollView>
+
+      <View
+        style={[styles.earthFooter, { height: earthFooterHeight }]}
+      >
+        <Image
+          source={images.earth}
+          resizeMode="cover"
+          style={{
+            width: earthImageSize,
+            height: earthImageSize,
+            marginTop: earthImageOffset,
+          }}
+        />
+      </View>
     </SafeAreaView>
   );
 }
@@ -138,7 +168,7 @@ function LanguageCard({ language, selected, onPress }: LanguageCardProps) {
     <TouchableOpacity
       activeOpacity={0.8}
       onPress={onPress}
-      className={`flex-row items-center rounded-2xl px-4 py-4 ${
+      className={`flex-row items-center rounded-[20px] px-4 py-4 ${
         selected
           ? "border-2 border-primary-purple bg-[#F4F1FE]"
           : "border border-border-default bg-white"
@@ -157,7 +187,7 @@ function LanguageCard({ language, selected, onPress }: LanguageCardProps) {
       </View>
 
       {selected ? (
-        <View className="h-7 w-7 items-center justify-center rounded-full bg-primary-purple">
+        <View className="h-[28px] w-[28px] items-center justify-center rounded-full bg-primary-purple">
           <Feather name="check" size={15} color="#FFFFFF" />
         </View>
       ) : (
@@ -174,7 +204,7 @@ function LanguageCard({ language, selected, onPress }: LanguageCardProps) {
 function LanguageFlag({ language }: { language: Language }) {
   if (language.id === "es") {
     return (
-      <View className="h-11 w-11 overflow-hidden rounded-full">
+      <View className="h-[36px] w-[36px] overflow-hidden rounded-full">
         <View className="h-1/4 bg-[#C60B1E]" />
         <View className="h-1/2 bg-[#FFC400]" />
         <View className="h-1/4 bg-[#C60B1E]" />
@@ -184,7 +214,7 @@ function LanguageFlag({ language }: { language: Language }) {
 
   if (language.id === "fr") {
     return (
-      <View className="h-11 w-11 flex-row overflow-hidden rounded-full">
+      <View className="h-[36px] w-[36px] flex-row overflow-hidden rounded-full">
         <View className="h-full w-1/3 bg-[#0055A4]" />
         <View className="h-full w-1/3 bg-white" />
         <View className="h-full w-1/3 bg-[#EF4135]" />
@@ -193,8 +223,8 @@ function LanguageFlag({ language }: { language: Language }) {
   }
 
   return (
-    <View className="h-11 w-11 items-center justify-center overflow-hidden rounded-full border border-border-default bg-white">
-      <View className="h-[20px] w-[20px] rounded-full bg-[#BC002D]" />
+    <View className="h-[36px] w-[36px] items-center justify-center overflow-hidden rounded-full border border-border-default bg-white">
+      <View className="h-[22px] w-[22px] rounded-full bg-[#BC002D]" />
     </View>
   );
 }
@@ -205,7 +235,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
   },
   scrollContent: {
-    paddingBottom: 0,
+    paddingBottom: 16,
   },
   cardShadow: {
     shadowColor: "#0D132B",
@@ -214,9 +244,8 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     elevation: 1,
   },
-  earthImage: {
+  earthFooter: {
     width: "100%",
-    height: 390,
-    marginTop: -55,
+    overflow: "hidden",
   },
 });
