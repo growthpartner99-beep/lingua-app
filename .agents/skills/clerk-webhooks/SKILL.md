@@ -64,15 +64,17 @@ export async function POST(req: NextRequest) {
   }
 
   if (evt.type === 'user.created') {
-    const { id, email_addresses, first_name, last_name } = evt.data
-    const email = email_addresses[0]?.email_address
+    const { id, email_addresses, primary_email_address_id, first_name, last_name } = evt.data
+    const emailObj = email_addresses.find(e => e.id === primary_email_address_id)
+    const email = emailObj?.email_address
     const name = `${first_name ?? ''} ${last_name ?? ''}`.trim()
     await db.users.create({ data: { clerkId: id, email, name } })
   }
 
   if (evt.type === 'user.updated') {
-    const { id, email_addresses, first_name, last_name } = evt.data
-    const email = email_addresses[0]?.email_address
+    const { id, email_addresses, primary_email_address_id, first_name, last_name } = evt.data
+    const emailObj = email_addresses.find(e => e.id === primary_email_address_id)
+    const email = emailObj?.email_address
     await db.users.update({ where: { clerkId: id }, data: { email, first_name, last_name } })
   }
 
@@ -125,25 +127,43 @@ export async function POST(req: NextRequest) {
   if (evt.type === 'user.created') {
     // Step 3: Extract user email and name from webhook payload
     const { id, email_addresses, first_name, last_name } = evt.data
-    const email = email_addresses[0]?.email_address
+    const email = emailObj?.email_address
     const name = `${first_name ?? ''} ${last_name ?? ''}`.trim()
 
     // Step 4: Call Resend API to send welcome email
-    await resend.emails.send({
+    // Escape user-provided name to prevent HTML injection
+    const escapedName = name
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#x27;')
+    
+    const emailResult = await resend.emails.send({
       from: 'noreply@yourdomain.com',
       to: email,
       subject: 'Welcome!',
-      html: `<p>Hi ${name}, welcome to our app!</p>`,
+      html: `<p>Hi ${escapedName}, welcome to our app!</p>`,
     })
 
+    if (emailResult.error) {
+      console.error('Resend email failed:', emailResult.error)
+      throw new Error(`Email send failed: ${emailResult.error?.message}`)
+    }
+
     // Step 5: Post notification to Slack channel
-    await fetch(process.env.SLACK_WEBHOOK_URL!, {
+    const slackResponse = await fetch(process.env.SLACK_WEBHOOK_URL!, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        text: `New user signed up: ${name} (${email})`,
+        text: `New user signed up: ${escapedName} (${email})`,
       }),
     })
+
+    if (!slackResponse.ok) {
+      console.error('Slack notification failed:', slackResponse.status)
+      throw new Error(`Slack notification failed: ${slackResponse.status}`)
+    }
   }
 
   // Always return 200 to acknowledge receipt
