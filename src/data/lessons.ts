@@ -72,7 +72,7 @@ export const lessons: Lesson[] = [
           {
             phrase: "Hasta luego",
             translation: "See you later",
-            pronunciation: "ahs-TAH LWEH-goh",
+            pronunciation: "AHS-tah LWEH-goh",
             usage: "Use it when you plan to meet the person again.",
           },
         ],
@@ -498,7 +498,7 @@ export const lessons: Lesson[] = [
           {
             word: "おはようございます",
             translation: "Good morning",
-            pronunciation: "oh-hah-yoh goh-zah-mahs",
+            pronunciation: "oh-hah-yoh goh-zah-ee-mahs",
             example: "おはようございます、先生。",
             exampleTranslation: "Good morning, teacher.",
           },
@@ -533,7 +533,7 @@ export const lessons: Lesson[] = [
           {
             phrase: "また明日！",
             translation: "See you tomorrow!",
-            pronunciation: "mah-tah AH-sheh-tah",
+            pronunciation: "mah-tah ah-SHEE-tah",
             usage: "Use it when you will see the person again soon.",
           },
           {
@@ -675,5 +675,12 @@ export function getLessonsByUnit(unitId: string): Lesson[] {
 export function getLessonsByLanguage(languageId: LanguageId): Lesson[] {
   return lessons
     .filter((lesson) => lesson.languageId === languageId)
-    .sort((a, b) => a.order - b.order);
+    .sort((a, b) => {
+      const unitOrderA = parseInt(a.unitId.split("-u")[1] || "0", 10);
+      const unitOrderB = parseInt(b.unitId.split("-u")[1] || "0", 10);
+      if (unitOrderA !== unitOrderB) {
+        return unitOrderA - unitOrderB;
+      }
+      return a.order - b.order;
+    });
 }
