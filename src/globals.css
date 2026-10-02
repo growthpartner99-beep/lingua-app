@@ -1,5 +1,7 @@
-@import "tailwindcss";
-@import "nativewind";
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/preflight.css" layer(base);
+@import "tailwindcss/utilities.css";
+@import "nativewind/theme";
 
 @theme {
   --color-primary-purple: #6C4EF5;
@@ -27,6 +29,11 @@
   --color-border-default: #E5E7EB;
 
   --font-family-base: 'Poppins', 'Segoe UI', system-ui, -apple-system, sans-serif;
+
+  --font-poppins-regular: 'Poppins-Regular';
+  --font-poppins-medium: 'Poppins-Medium';
+  --font-poppins-semibold: 'Poppins-SemiBold';
+  --font-poppins-bold: 'Poppins-Bold';
 
   --font-size-h1: 32px;
   --font-size-h2: 24px;
