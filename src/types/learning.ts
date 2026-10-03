@@ -137,3 +137,9 @@ export interface Lesson {
   activities: Activity[];
   aiTeacherPrompt: AITeacherPrompt;
 }
+
+/**
+ * Visual state of a lesson on the Lessons screen.
+ * Derived from local progress, never used to block opening a lesson.
+ */
+export type LessonStatus = "completed" | "in_progress" | "locked";

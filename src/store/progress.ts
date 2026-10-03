@@ -8,6 +8,15 @@ function getTodayKey() {
   return new Date().toISOString().split("T")[0];
 }
 
+const INITIAL_COMPLETED_LESSONS = [
+  "es-u1-l1",
+  "es-u1-l2",
+  "fr-u1-l1",
+  "fr-u1-l2",
+  "ja-u1-l1",
+  "ja-u1-l2",
+];
+
 interface ProgressState {
   dailyXp: number;
   dailyGoalXp: number;
@@ -29,7 +38,7 @@ export const useProgressStore = create<ProgressState>()(
       dailyGoalXp: 20,
       streak: 0,
       completedPlanIds: [],
-      completedLessonIds: [],
+      completedLessonIds: INITIAL_COMPLETED_LESSONS,
       lastActiveDay: getTodayKey(),
       togglePlanItem: (id) =>
         set((state) => {
