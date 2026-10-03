@@ -17,6 +17,7 @@ interface ProgressState {
   lastActiveDay: string;
   togglePlanItem: (id: PlanItemId) => void;
   completeLesson: (lessonId: string, xp: number) => void;
+  checkAndResetDay: () => void;
   _hasHydrated: boolean;
   _setHasHydrated: (hasHydrated: boolean) => void;
 }
@@ -53,13 +54,26 @@ export const useProgressStore = create<ProgressState>()(
           const baseState = state.lastActiveDay !== today
             ? { dailyXp: 0, completedPlanIds: [], lastActiveDay: today }
             : {};
+          const currentDailyXp = baseState.dailyXp ?? state.dailyXp;
           return {
             ...baseState,
             completedLessonIds: isNewLesson
               ? [...state.completedLessonIds, lessonId]
               : state.completedLessonIds,
-            dailyXp: isNewLesson ? (baseState.dailyXp ?? state.dailyXp) + xp : state.dailyXp,
+            dailyXp: isNewLesson ? currentDailyXp + xp : currentDailyXp,
           };
+        }),
+      checkAndResetDay: () =>
+        set((state) => {
+          const today = getTodayKey();
+          if (state.lastActiveDay !== today) {
+            return {
+              dailyXp: 0,
+              completedPlanIds: [],
+              lastActiveDay: today,
+            };
+          }
+          return {};
         }),
       _hasHydrated: false,
       _setHasHydrated: (hasHydrated) => set({ _hasHydrated: hasHydrated }),
