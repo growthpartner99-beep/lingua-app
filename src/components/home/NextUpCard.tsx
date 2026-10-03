@@ -2,11 +2,17 @@ import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
 import { images } from "@/constants/images";
+import { posthog } from "@/lib/posthog";
+
+const handleAiTutorOpen = () => {
+  posthog?.capture("ai_tutor_opened", { entry_point: "home_next_up" });
+  router.push("/ai-teacher");
+};
 
 export function NextUpCard() {
   return (
     <Pressable
-      onPress={() => router.push("/ai-teacher")}
+      onPress={handleAiTutorOpen}
       style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
     >
       <View style={styles.text}>

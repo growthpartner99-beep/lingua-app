@@ -17,6 +17,7 @@ import { VerificationModal } from "@/components/auth/VerificationModal";
 import { useSocialAuth } from "@/hooks/useSocialAuth";
 import { getErrorMessage } from "@/lib/clerk";
 import { isValidEmail } from "@/lib/validation";
+import { posthog } from "@/lib/posthog";
 
 export default function SignUpScreen() {
   const { isLoaded, isSignedIn } = useAuth();
@@ -64,6 +65,7 @@ export default function SignUpScreen() {
         return;
       }
 
+      posthog?.capture("sign_up_code_requested");
       setVerificationVisible(true);
     } catch (err) {
       setError(getErrorMessage(err));

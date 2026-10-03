@@ -2,6 +2,7 @@ import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
 import { images } from "@/constants/images";
 import type { Language, Unit } from "@/types/learning";
+import { posthog, posthogLogger } from "@/lib/posthog";
 
 type ContinueLearningCardProps = {
   language: Language;
@@ -14,6 +15,20 @@ export function ContinueLearningCard({
   unit,
   level,
 }: ContinueLearningCardProps) {
+  const handleContinue = () => {
+    posthog?.capture("learning_continue_opened", {
+      language_id: language.id,
+      unit_order: unit.order,
+      level,
+    });
+    posthogLogger.info("learning session opened", {
+      language_id: language.id,
+      unit_order: unit.order,
+      level,
+    });
+    router.push("/learn");
+  };
+
   return (
     <View style={styles.card}>
       <View pointerEvents="none" style={styles.glowTop} />
@@ -38,7 +53,7 @@ export function ContinueLearningCard({
       </Text>
 
       <Pressable
-        onPress={() => router.push("/learn")}
+        onPress={handleContinue}
         style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
         hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
       >

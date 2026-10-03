@@ -34,11 +34,19 @@
           "imageWidth": 76
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-localization",
+      "posthog-react-native/expo"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": false
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "c39204b7-7282-4d89-8383-68b08707ae48"
+      }
     }
   }
 }
