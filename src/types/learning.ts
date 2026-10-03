@@ -15,6 +15,8 @@ export interface Language {
   nativeName: string;
   /** Flag emoji for the language picker */
   flag: string;
+  /** Hello in this language, used for the home greeting, e.g. "Hola" */
+  greeting: string;
   /** Short friendly description for the language card */
   description: string;
   /** Accent color for the language card UI (theme token hex) */

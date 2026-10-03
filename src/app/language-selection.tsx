@@ -16,17 +16,17 @@ import { images } from "@/constants/images";
 import { languages } from "@/data/languages";
 import type { Language, LanguageId } from "@/types/learning";
 import { useLanguageStore } from "@/store/language";
+import { LanguageFlag } from "@/components/LanguageFlag";
 
 export default function LanguageSelectionScreen() {
   const [query, setQuery] = useState("");
   const { width: windowWidth } = useWindowDimensions();
   const selectedLanguage = useLanguageStore((state) => state.selectedLanguage);
   const setSelectedLanguage = useLanguageStore((state) => state.setSelectedLanguage);
-  const hasHydrated = useLanguageStore((state) => state._hasHydrated);
-  const [localSelectedId, setLocalSelectedId] = useState<LanguageId>("es");
+  const [localSelectedId, setLocalSelectedId] = useState<LanguageId | null>(null);
   const [userHasInteracted, setUserHasInteracted] = useState(false);
 
-  const selectedId = hasHydrated && !userHasInteracted ? selectedLanguage : localSelectedId;
+  const selectedId = userHasInteracted && localSelectedId ? localSelectedId : selectedLanguage;
 
   const handleLanguagePress = (languageId: LanguageId) => {
     setLocalSelectedId(languageId);
@@ -194,38 +194,6 @@ function LanguageCard({ language, selected, onPress }: LanguageCardProps) {
         <Feather name="chevron-right" size={22} color="#9CA3AF" />
       )}
     </TouchableOpacity>
-  );
-}
-
-/**
- * Flag emojis do not render on Android or on web, so each flag is
- * drawn with plain views to match the circular flags in the design.
- */
-function LanguageFlag({ language }: { language: Language }) {
-  if (language.id === "es") {
-    return (
-      <View className="h-[36px] w-[36px] overflow-hidden rounded-full">
-        <View className="h-1/4 bg-[#C60B1E]" />
-        <View className="h-1/2 bg-[#FFC400]" />
-        <View className="h-1/4 bg-[#C60B1E]" />
-      </View>
-    );
-  }
-
-  if (language.id === "fr") {
-    return (
-      <View className="h-[36px] w-[36px] flex-row overflow-hidden rounded-full">
-        <View className="h-full w-1/3 bg-[#0055A4]" />
-        <View className="h-full w-1/3 bg-white" />
-        <View className="h-full w-1/3 bg-[#EF4135]" />
-      </View>
-    );
-  }
-
-  return (
-    <View className="h-[36px] w-[36px] items-center justify-center overflow-hidden rounded-full border border-border-default bg-white">
-      <View className="h-[22px] w-[22px] rounded-full bg-[#BC002D]" />
-    </View>
   );
 }
 

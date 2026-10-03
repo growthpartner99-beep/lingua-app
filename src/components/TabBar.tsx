@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { LayoutChangeEvent } from "react-native";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View, I18nManager } from "react-native";
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -20,7 +20,9 @@ const EASE_IN_OUT = Easing.bezier(0.77, 0, 0.175, 1);
 
 const getIndicatorX = (width: number, index: number, routeCount: number) => {
   const cellWidth = width / routeCount;
-  return index * cellWidth + (cellWidth - CIRCLE_SIZE) / 2;
+  const isRTL = I18nManager.getConstants().isRTL;
+  const logicalIndex = isRTL ? routeCount - 1 - index : index;
+  return logicalIndex * cellWidth + (cellWidth - CIRCLE_SIZE) / 2;
 };
 
 export function TabBar({
@@ -63,13 +65,18 @@ export function TabBar({
     transform: [{ translateX: indicatorX.get() }],
   }));
 
+  const isRTL = I18nManager.getConstants().isRTL;
+
+  const rowStyle = { flexDirection: isRTL ? "row-reverse" : "row" as const, height: ROW_HEIGHT };
+  const indicatorPositionStyle = { position: "absolute" as const, top: ICON_OFFSET_TOP, left: isRTL ? undefined : 0, right: isRTL ? 0 : undefined, width: CIRCLE_SIZE, height: CIRCLE_SIZE, borderRadius: CIRCLE_SIZE / 2, backgroundColor: colors.primary.purple };
+
   return (
     <View style={[styles.bar, { paddingBottom: insets.bottom }]}>
-      <View style={styles.row} onLayout={handleRowLayout}>
+      <View style={[styles.row, rowStyle]} onLayout={handleRowLayout}>
         {rowWidth > 0 && (
           <Animated.View
             pointerEvents="none"
-            style={[styles.indicator, indicatorStyle]}
+            style={[indicatorPositionStyle, indicatorStyle]}
           />
         )}
 
@@ -142,17 +149,7 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   row: {
-    flexDirection: "row",
     height: ROW_HEIGHT,
-  },
-  indicator: {
-    position: "absolute",
-    top: ICON_OFFSET_TOP,
-    left: 0,
-    width: CIRCLE_SIZE,
-    height: CIRCLE_SIZE,
-    borderRadius: CIRCLE_SIZE / 2,
-    backgroundColor: colors.primary.purple,
   },
   cell: {
     flex: 1,

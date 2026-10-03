@@ -1,14 +1,12 @@
-import { Redirect } from "expo-router";
-import { Text, View } from "react-native";
 import { useAuth } from "@clerk/expo";
 import { useLanguageStore } from "@/store/language";
+import { Redirect } from "expo-router";
+import { Text, View } from "react-native";
 
-export default function Index() {
+export function AuthLanguageGuard({ children }: { children: React.ReactNode }) {
   const { isLoaded, isSignedIn } = useAuth();
   const hasHydrated = useLanguageStore((state) => state._hasHydrated);
-  const hasSelectedLanguage = useLanguageStore(
-    (state) => state.hasSelectedLanguage
-  );
+  const hasSelectedLanguage = useLanguageStore((state) => state.hasSelectedLanguage);
 
   if (!isLoaded || !hasHydrated) {
     return (
@@ -28,7 +26,7 @@ export default function Index() {
     return <Redirect href="/language-selection" />;
   }
 
-  return <Redirect href="/home" />;
+  return <>{children}</>;
 }
 
 const styles = {
