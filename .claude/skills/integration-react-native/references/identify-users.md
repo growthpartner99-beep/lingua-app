@@ -231,8 +231,14 @@ class DeepLinkIdentityManager {
 
         if isAuthenticatedOnMobile {
             // The mobile app already knows the current user.
-            // Alias the incoming web distinct ID to that user.
-            PostHogSDK.shared.alias(webDistinctId)
+            // Verify the deep-link webDistinctId against the authenticated user
+            // through the backend before creating the alias association.
+            Task {
+                let isValid = await verifyDeepLinkIdentity(webDistinctId: webDistinctId, canonicalUserId: currentUserId)
+                if isValid {
+                    PostHogSDK.shared.alias(webDistinctId)
+                }
+            }
         } else {
             // Reuse the web distinct ID until login on mobile.
             PostHogSDK.shared.identify(webDistinctId)
@@ -243,8 +249,8 @@ class DeepLinkIdentityManager {
 
     func handleLogin(canonicalUserId: String) {
         // Switch from the web distinct ID (or a mobile anon ID)
-        // to your canonical user ID.
-        PostHogSDK.shared.identify(canonicalUserId)
+        // to your canonical user ID using alias to preserve pre-login events.
+        PostHogSDK.shared.alias(canonicalUserId)
         // Set user properties, track signup event, etc.
     }
 
@@ -269,8 +275,14 @@ object DeepLinkIdentityManager {
 
         if (isAuthenticatedOnMobile) {
             // The mobile app already knows the current user.
-            // Alias the incoming web distinct ID to that user.
-            PostHog.alias(webDistinctId)
+            // Verify the deep-link webDistinctId against the authenticated user
+            // through the backend before creating the alias association.
+            lifecycleScope.launch {
+                val isValid = verifyDeepLinkIdentity(webDistinctId, currentUserId)
+                if (isValid) {
+                    PostHog.alias(webDistinctId)
+                }
+            }
         } else {
             // Reuse the web distinct ID until login on mobile.
             PostHog.identify(webDistinctId)
@@ -281,8 +293,8 @@ object DeepLinkIdentityManager {
 
     fun handleLogin(canonicalUserId: String) {
         // Switch from the web distinct ID (or a mobile anon ID)
-        // to your canonical user ID.
-        PostHog.identify(canonicalUserId)
+        // to your canonical user ID using alias to preserve pre-login events.
+        PostHog.alias(canonicalUserId)
         // Set user properties, track signup event, etc.
     }
 

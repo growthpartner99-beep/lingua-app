@@ -7,8 +7,8 @@ const host = extra?.posthogHost as string | undefined;
 
 if ((!projectToken || !host) && __DEV__) {
   const missingVariable = projectToken ? "POSTHOG_HOST" : "POSTHOG_PROJECT_TOKEN";
-  throw new Error(
-    `${missingVariable} variable required by PostHog is missing or un-configured, this causes events to be silently missed. This error stops appearing once ${missingVariable} is configured`,
+  console.warn(
+    `[PostHog] ${missingVariable} variable required by PostHog is missing or un-configured, this causes events to be silently missed. This warning stops appearing once ${missingVariable} is configured`,
   );
 }
 

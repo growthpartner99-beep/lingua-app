@@ -968,10 +968,10 @@ When using the PostHog SDK, it's important to handle potential errors that may o
 React Native
 
 ```jsx
-function handleFeatureFlag(client, flagKey, distinctId) {
+function handleFeatureFlag(client, flagKey) {
     try {
-        const isEnabled = client.isFeatureEnabled(flagKey, distinctId);
-        console.log(`Feature flag '${flagKey}' for user '${distinctId}' is ${isEnabled ? 'enabled' : 'disabled'}`);
+        const isEnabled = client.isFeatureEnabled(flagKey);
+        console.log(`Feature flag '${flagKey}' is ${isEnabled ? 'enabled' : 'disabled'}`);
         return isEnabled;
     } catch (error) {
         console.error(`Error fetching feature flag '${flagKey}': ${error.message}`);
@@ -983,7 +983,7 @@ function handleFeatureFlag(client, flagKey, distinctId) {
 
 // Usage example
 try {
-    const flagEnabled = handleFeatureFlag(client, 'new-feature', 'user-123');
+    const flagEnabled = handleFeatureFlag(client, 'new-feature');
     if (flagEnabled) {
         // Implement new feature logic
     } else {
