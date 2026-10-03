@@ -18,7 +18,8 @@ export function UnitHero({
   onBack,
   onSwitchUnit,
 }: UnitHeroProps) {
-  const [isSaved, setIsSaved] = useState(true);
+  // Bookmarking is not persisted yet, so start from the unbookmarked state.
+  const [isSaved, setIsSaved] = useState(false);
 
   return (
     <View>

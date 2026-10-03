@@ -18,7 +18,7 @@ export function LessonCard({ lesson, number, status, onPress }: LessonCardProps)
 
   return (
     <Pressable
-      accessibilityLabel={`Lesson ${number}, ${lesson.title}`}
+      accessibilityLabel={`Lesson ${number}, ${lesson.title}, ${status.replace("_", " ")}`}
       accessibilityRole="button"
       onPress={onPress}
       style={({ pressed }) => [

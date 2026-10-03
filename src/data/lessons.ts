@@ -2310,35 +2310,41 @@ export function getLessonById(id: string): Lesson | undefined {
 
 /**
  * Phrases shown on the audio lesson screen. Every lesson is hardcoded,
- * so we read the first phrases-style activity and fall back to the
- * listen / vocabulary activities when a lesson has no phrase list.
+ * so we read the first phrases-style activity, then the listen activity,
+ * and fall back to the vocabulary activities when a lesson has neither.
  */
 export function getLessonPhrases(lesson: Lesson): Phrase[] {
-  for (const activity of lesson.activities) {
-    if (activity.type === "phrases") {
-      return activity.items;
-    }
-    if (activity.type === "listen_repeat") {
-      return [
-        {
-          phrase: activity.text,
-          translation: activity.translation,
-          pronunciation: activity.pronunciation,
-          usage: activity.instruction,
-        },
-      ];
-    }
+  const phrasesActivity = lesson.activities.find(
+    (activity) => activity.type === "phrases"
+  );
+  if (phrasesActivity?.type === "phrases") {
+    return phrasesActivity.items;
   }
 
-  for (const activity of lesson.activities) {
-    if (activity.type === "vocabulary") {
-      return activity.items.map((item) => ({
-        phrase: item.word,
-        translation: item.translation,
-        pronunciation: item.pronunciation,
-        usage: item.example,
-      }));
-    }
+  const listenActivity = lesson.activities.find(
+    (activity) => activity.type === "listen_repeat"
+  );
+  if (listenActivity?.type === "listen_repeat") {
+    return [
+      {
+        phrase: listenActivity.text,
+        translation: listenActivity.translation,
+        pronunciation: listenActivity.pronunciation,
+        usage: listenActivity.instruction,
+      },
+    ];
+  }
+
+  const vocabularyActivity = lesson.activities.find(
+    (activity) => activity.type === "vocabulary"
+  );
+  if (vocabularyActivity?.type === "vocabulary") {
+    return vocabularyActivity.items.map((item) => ({
+      phrase: item.word,
+      translation: item.translation,
+      pronunciation: item.pronunciation,
+      usage: item.example,
+    }));
   }
 
   return [];

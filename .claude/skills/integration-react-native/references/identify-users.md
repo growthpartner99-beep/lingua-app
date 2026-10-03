@@ -265,19 +265,23 @@ class DeepLinkIdentityManager {
 ```kotlin
 import android.net.Uri
 import com.posthog.PostHog
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 object DeepLinkIdentityManager {
 
     // Deep Link Received
 
-    fun handleDeepLink(uri: Uri, isAuthenticatedOnMobile: Boolean) {
+    // Call this from an Activity or Fragment and pass a scope owned by its
+    // lifecycle, for example `lifecycleScope`.
+    fun handleDeepLink(uri: Uri, isAuthenticatedOnMobile: Boolean, scope: CoroutineScope) {
         val webDistinctId = uri.getQueryParameter("ph_distinct_id") ?: return
 
         if (isAuthenticatedOnMobile) {
             // The mobile app already knows the current user.
             // Verify the deep-link webDistinctId against the authenticated user
             // through the backend before creating the alias association.
-            lifecycleScope.launch {
+            scope.launch {
                 val isValid = verifyDeepLinkIdentity(webDistinctId, currentUserId)
                 if (isValid) {
                     PostHog.alias(webDistinctId)

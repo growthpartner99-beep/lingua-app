@@ -128,7 +128,9 @@ export default function LearnScreen() {
         <View style={styles.tabs}>
           <View style={styles.track}>
             <Pressable
+              accessibilityLabel="Lessons"
               accessibilityRole="tab"
+              accessibilityState={{ selected: tab === "lessons" }}
               onPress={() => setTab("lessons")}
               style={[styles.segment, tab === "lessons" && styles.segmentActive]}
             >
@@ -144,7 +146,9 @@ export default function LearnScreen() {
             </Pressable>
 
             <Pressable
+              accessibilityLabel="Practice"
               accessibilityRole="tab"
+              accessibilityState={{ selected: tab === "practice" }}
               onPress={() => setTab("practice")}
               style={[styles.segment, tab === "practice" && styles.segmentActive]}
             >

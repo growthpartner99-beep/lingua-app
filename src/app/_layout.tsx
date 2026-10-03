@@ -43,7 +43,9 @@ function PostHogIdentity() {
       return;
     }
 
-    if (previousUserId.current || !hasResolvedAuth.current) {
+    // Only reset when we previously identified someone. Resetting on the
+    // initial signed-out resolution would discard the anonymous ID for no reason.
+    if (previousUserId.current) {
       client.reset();
       previousUserId.current = null;
     }

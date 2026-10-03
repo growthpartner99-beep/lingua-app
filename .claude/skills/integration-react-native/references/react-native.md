@@ -724,7 +724,7 @@ Super Properties are persisted across sessions so you have to explicitly remove 
 JavaScript
 
 ```javascript
-posthog.unregister('icecream pref'),
+posthog.unregister('icecream pref')
 ```
 
 This will remove the super property and subsequent events will not include it.
@@ -835,6 +835,7 @@ const MyComponent = () => {
 React Native
 
 ```jsx
+import { Text } from 'react-native'
 import { useFeatureFlag } from 'posthog-react-native'
 
 const MyComponent = () => {
@@ -849,7 +850,7 @@ const MyComponent = () => {
 
     // Optional use the 'useFeatureFlagWithPayload' hook for fetching the feature flag payload
 
-    return <div/>
+    return <Text/>
 }
 ```
 
@@ -1272,7 +1273,7 @@ posthog.debug()
 
 ## Disabling for local development
 
-You may want to disable PostHog when working locally or in a test environment. You can do this by setting the `disable` option to `true` when initializing PostHog. Helpfully this allows you to continue using `usePostHog` and safely calling it without anything actually happening.
+You may want to disable PostHog when working locally or in a test environment. You can do this by setting the `disabled` option to `true` when initializing PostHog. Helpfully this allows you to continue using `usePostHog` and safely calling it without anything actually happening.
 
 React Native
 
