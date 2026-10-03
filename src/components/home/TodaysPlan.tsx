@@ -15,9 +15,6 @@ export function TodaysPlan({ items, onToggle }: TodaysPlanProps) {
         <Text className="font-poppins-bold text-[18px] text-text-primary">
           {"Today's plan"}
         </Text>
-        <Text className="font-poppins-semibold text-[15px] text-primary-purple">
-          View all
-        </Text>
       </View>
 
       <View style={styles.list}>
@@ -26,6 +23,8 @@ export function TodaysPlan({ items, onToggle }: TodaysPlanProps) {
             key={item.id}
             onPress={() => onToggle(item.id)}
             style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+            accessibilityRole="checkbox"
+            accessibilityState={{ checked: item.done }}
           >
             <View style={[styles.iconBox, { backgroundColor: item.tint }]}>
               {item.icon === "chat" ? (

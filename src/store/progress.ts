@@ -4,12 +4,17 @@ import { stateStorage } from "@/lib/storage";
 
 export type PlanItemId = "lesson" | "conversation" | "words";
 
+function getTodayKey() {
+  return new Date().toISOString().split("T")[0];
+}
+
 interface ProgressState {
   dailyXp: number;
   dailyGoalXp: number;
   streak: number;
   completedPlanIds: PlanItemId[];
   completedLessonIds: string[];
+  lastActiveDay: string;
   togglePlanItem: (id: PlanItemId) => void;
   completeLesson: (lessonId: string, xp: number) => void;
   _hasHydrated: boolean;
@@ -18,25 +23,44 @@ interface ProgressState {
 
 export const useProgressStore = create<ProgressState>()(
   persist(
-    (set) => ({
-      dailyXp: 15,
+    (set, get) => ({
+      dailyXp: 0,
       dailyGoalXp: 20,
-      streak: 12,
-      completedPlanIds: ["lesson"],
-      completedLessonIds: ["es-u1-l1", "es-u1-l2"],
+      streak: 0,
+      completedPlanIds: [],
+      completedLessonIds: [],
+      lastActiveDay: getTodayKey(),
       togglePlanItem: (id) =>
-        set((state) => ({
-          completedPlanIds: state.completedPlanIds.includes(id)
-            ? state.completedPlanIds.filter((planId) => planId !== id)
-            : [...state.completedPlanIds, id],
-        })),
+        set((state) => {
+          const today = getTodayKey();
+          if (state.lastActiveDay !== today) {
+            return {
+              completedPlanIds: [id],
+              dailyXp: 0,
+              lastActiveDay: today,
+            };
+          }
+          return {
+            completedPlanIds: state.completedPlanIds.includes(id)
+              ? state.completedPlanIds.filter((planId) => planId !== id)
+              : [...state.completedPlanIds, id],
+          };
+        }),
       completeLesson: (lessonId, xp) =>
-        set((state) => ({
-          completedLessonIds: state.completedLessonIds.includes(lessonId)
-            ? state.completedLessonIds
-            : [...state.completedLessonIds, lessonId],
-          dailyXp: state.dailyXp + xp,
-        })),
+        set((state) => {
+          const today = getTodayKey();
+          const isNewLesson = !state.completedLessonIds.includes(lessonId);
+          const baseState = state.lastActiveDay !== today
+            ? { dailyXp: 0, completedPlanIds: [], lastActiveDay: today }
+            : {};
+          return {
+            ...baseState,
+            completedLessonIds: isNewLesson
+              ? [...state.completedLessonIds, lessonId]
+              : state.completedLessonIds,
+            dailyXp: isNewLesson ? (baseState.dailyXp ?? state.dailyXp) + xp : state.dailyXp,
+          };
+        }),
       _hasHydrated: false,
       _setHasHydrated: (hasHydrated) => set({ _hasHydrated: hasHydrated }),
     }),
@@ -45,6 +69,12 @@ export const useProgressStore = create<ProgressState>()(
       storage: createJSONStorage(() => stateStorage),
       onRehydrateStorage: () => (state) => {
         if (state) {
+          const today = getTodayKey();
+          if (state.lastActiveDay !== today) {
+            state.dailyXp = 0;
+            state.completedPlanIds = [];
+            state.lastActiveDay = today;
+          }
           state._setHasHydrated(true);
         }
       },

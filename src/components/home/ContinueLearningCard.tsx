@@ -40,6 +40,7 @@ export function ContinueLearningCard({
       <Pressable
         onPress={() => router.push("/learn")}
         style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
+        hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
       >
         <Text style={styles.buttonText}>Continue</Text>
       </Pressable>
@@ -91,6 +92,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderRadius: 999,
     backgroundColor: "#FFFFFF",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
   },
   buttonPressed: {
     opacity: 0.8,
