@@ -5,6 +5,8 @@ import streakFire from '@/assets/images/streak-fire.png';
 import earth from '@/assets/images/earth.png';
 import palace from '@/assets/images/palace.png';
 import treasure from '@/assets/images/treasure.png';
+import googleIcon from '@/assets/images/google-icon.png';
+import aiTutor from '@/assets/images/ai-tutor.jpg';
 
 export const images = {
   mascotAuth,
@@ -14,6 +16,8 @@ export const images = {
   earth,
   palace,
   treasure,
+  googleIcon,
+  aiTutor,
 } as const;
 
 export type ImageAssets = typeof images;

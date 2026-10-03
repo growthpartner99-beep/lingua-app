@@ -1,17 +1,40 @@
-import { StyleSheet, Text, View } from "react-native";
+import { Redirect } from "expo-router";
+import { Text, View } from "react-native";
+import { useAuth } from "@clerk/expo";
+import { useLanguageStore } from "@/store/language";
 
 export default function Index() {
-  return (
-    <View style={styles.container}>
-      <Text>hello, world!</Text>
-    </View>
+  const { isLoaded, isSignedIn } = useAuth();
+  const hasHydrated = useLanguageStore((state) => state._hasHydrated);
+  const hasSelectedLanguage = useLanguageStore(
+    (state) => state.hasSelectedLanguage
   );
+
+  if (!isLoaded || !hasHydrated) {
+    return (
+      <View style={styles.container}>
+        <Text className="font-poppins-medium text-[16px] text-text-primary">
+          Loading...
+        </Text>
+      </View>
+    );
+  }
+
+  if (!isSignedIn) {
+    return <Redirect href="/onboarding" />;
+  }
+
+  if (!hasSelectedLanguage) {
+    return <Redirect href="/language-selection" />;
+  }
+
+  return <Redirect href="/home" />;
 }
 
-const styles = StyleSheet.create({
+const styles = {
   container: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: "center" as const,
+    justifyContent: "center" as const,
   },
-});
+};
