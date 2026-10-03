@@ -9,8 +9,14 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { images } from "@/constants/images";
+import { posthog, posthogLogger } from "@/lib/posthog";
 
 export default function Onboarding() {
+  const handleGetStarted = () => {
+    posthog?.capture("onboarding_started");
+    posthogLogger.info("onboarding flow started");
+    router.push("/sign-up");
+  };
   return (
     <SafeAreaView style={styles.safeArea}>
       <Stack.Screen options={{ headerShown: false }} />
@@ -100,7 +106,7 @@ export default function Onboarding() {
 
           <TouchableOpacity
             activeOpacity={0.85}
-            onPress={() => router.push("/sign-up")}
+            onPress={handleGetStarted}
             className="mx-5 mb-5 mt-4 h-[68px] flex-row items-center justify-center gap-3 rounded-[20px] bg-primary-purple"
           >
             <Text className="font-poppins-bold text-[20px] text-text-on-accent">

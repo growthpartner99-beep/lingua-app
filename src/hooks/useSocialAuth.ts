@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useSSO } from "@clerk/expo";
 import { router } from "expo-router";
 import { getErrorMessage } from "@/lib/clerk";
+import { posthog } from "@/lib/posthog";
 
 type SocialProvider = "google" | "facebook" | "apple";
 
@@ -21,6 +22,8 @@ export function useSocialAuth() {
     setError(null);
 
     try {
+      posthog?.capture("social_auth_started", { provider });
+
       const { createdSessionId, setActive } = await startSSOFlow({
         strategy: strategies[provider],
       });

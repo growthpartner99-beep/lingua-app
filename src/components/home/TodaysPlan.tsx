@@ -2,6 +2,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import type { PlanItem } from "@/hooks/useHomeData";
 import type { PlanItemId } from "@/store/progress";
+import { posthog } from "@/lib/posthog";
 
 type TodaysPlanProps = {
   items: PlanItem[];
@@ -9,6 +10,14 @@ type TodaysPlanProps = {
 };
 
 export function TodaysPlan({ items, onToggle }: TodaysPlanProps) {
+  const handleToggle = (id: PlanItemId, completed: boolean) => {
+    posthog?.capture("learning_plan_item_toggled", {
+      plan_item_id: id,
+      completed,
+    });
+    onToggle(id);
+  };
+
   return (
     <View style={styles.section}>
       <View className="ml-4 flex-row items-center justify-between">
@@ -21,7 +30,7 @@ export function TodaysPlan({ items, onToggle }: TodaysPlanProps) {
         {items.map((item) => (
           <Pressable
             key={item.id}
-            onPress={() => onToggle(item.id)}
+            onPress={() => handleToggle(item.id, !item.done)}
             style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
             accessibilityRole="checkbox"
             accessibilityState={{ checked: item.done }}

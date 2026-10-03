@@ -17,6 +17,7 @@ import { languages } from "@/data/languages";
 import type { Language, LanguageId } from "@/types/learning";
 import { useLanguageStore } from "@/store/language";
 import { LanguageFlag } from "@/components/LanguageFlag";
+import { posthog, posthogLogger } from "@/lib/posthog";
 
 export default function LanguageSelectionScreen() {
   const [query, setQuery] = useState("");
@@ -56,6 +57,8 @@ export default function LanguageSelectionScreen() {
   };
 
   const handleConfirm = () => {
+    posthog?.capture("language_selected", { language_id: selectedId });
+    posthogLogger.info("learning language selected", { language_id: selectedId ?? "unknown" });
     setSelectedLanguage(selectedId);
     handleBack();
   };
