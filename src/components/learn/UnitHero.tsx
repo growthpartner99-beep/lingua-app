@@ -9,16 +9,22 @@ type UnitHeroProps = {
   unit: Unit;
   subtitle: string;
   onBack: () => void;
+  onSwitchUnit: () => void;
 };
 
-export function UnitHero({ unit, subtitle, onBack }: UnitHeroProps) {
+export function UnitHero({
+  unit,
+  subtitle,
+  onBack,
+  onSwitchUnit,
+}: UnitHeroProps) {
   const [isSaved, setIsSaved] = useState(true);
 
   return (
     <View>
       <View style={styles.header}>
         <Pressable
-          accessibilityLabel="Choose another unit"
+          accessibilityLabel="Go back"
           accessibilityRole="button"
           hitSlop={8}
           onPress={onBack}
@@ -27,14 +33,27 @@ export function UnitHero({ unit, subtitle, onBack }: UnitHeroProps) {
           <Feather name="chevron-left" size={26} color={colors.text.primary} />
         </Pressable>
 
-        <View style={styles.titleBlock}>
-          <Text numberOfLines={1} style={styles.title}>
-            {unit.title}
-          </Text>
+        <Pressable
+          accessibilityLabel="Choose another unit"
+          accessibilityRole="button"
+          hitSlop={8}
+          onPress={onSwitchUnit}
+          style={styles.titleBlock}
+        >
+          <View style={styles.titleRow}>
+            <Text numberOfLines={1} style={styles.title}>
+              {unit.title}
+            </Text>
+            <Feather
+              name="chevron-down"
+              size={18}
+              color={colors.text.secondary}
+            />
+          </View>
           <Text numberOfLines={1} style={styles.subtitle}>
             {subtitle}
           </Text>
-        </View>
+        </Pressable>
 
         <Pressable
           accessibilityLabel={isSaved ? "Remove bookmark" : "Bookmark unit"}
@@ -77,6 +96,11 @@ const styles = StyleSheet.create({
   titleBlock: {
     flex: 1,
     marginRight: 8,
+  },
+  titleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
   },
   title: {
     fontFamily: "Poppins-Bold",

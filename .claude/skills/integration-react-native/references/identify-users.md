@@ -249,8 +249,8 @@ class DeepLinkIdentityManager {
 
     func handleLogin(canonicalUserId: String) {
         // Switch from the web distinct ID (or a mobile anon ID)
-        // to your canonical user ID using alias to preserve pre-login events.
-        PostHogSDK.shared.alias(canonicalUserId)
+        // to your canonical user ID. This preserves pre-login events.
+        PostHogSDK.shared.identify(canonicalUserId)
         // Set user properties, track signup event, etc.
     }
 
@@ -293,8 +293,8 @@ object DeepLinkIdentityManager {
 
     fun handleLogin(canonicalUserId: String) {
         // Switch from the web distinct ID (or a mobile anon ID)
-        // to your canonical user ID using alias to preserve pre-login events.
-        PostHog.alias(canonicalUserId)
+        // to your canonical user ID. This preserves pre-login events.
+        PostHog.identify(canonicalUserId)
         // Set user properties, track signup event, etc.
     }
 

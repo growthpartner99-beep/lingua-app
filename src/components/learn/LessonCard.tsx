@@ -56,7 +56,7 @@ export function LessonCard({ lesson, number, status, onPress }: LessonCardProps)
 
         {isLocked && (
           <Text className="mt-1 font-poppins-regular text-[13px] leading-[16px] text-text-secondary">
-            0 / {lesson.activities.length} lessons
+            0 / {lesson.activities.length} activities
           </Text>
         )}
       </View>

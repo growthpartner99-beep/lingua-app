@@ -7,7 +7,7 @@ type Metric = {
   valueColor: string;
 };
 
-const METRICS: Metric[] = [
+const EXAMPLE_METRICS: Metric[] = [
   { label: "Speaking", value: "Excellent", valueColor: "#67BF3F" },
   { label: "Pronunciation", value: "Great", valueColor: "#417BED" },
   { label: "Grammar", value: "Good", valueColor: "#553DEB" },
@@ -18,35 +18,50 @@ const METRICS: Metric[] = [
  * with thin dividers between them, exactly like the design card that
  * follows the call stage. It is rendered below the stage, so the
  * lesson keeps its call-first layout.
+ *
+ * The lesson has no assessment results yet, so the ratings below are
+ * placeholders and the card says so. Replace EXAMPLE_METRICS with the
+ * scores of the finished session once the lesson can be graded.
  */
 export function LessonFeedbackCard() {
   return (
     <View
-      className="mx-5 mt-0.5 flex-row justify-between rounded-[20px] bg-white px-5 py-6"
+      className="mx-5 mt-0.5 rounded-[20px] bg-white px-5 py-6"
       style={styles.card}
     >
-      {METRICS.map((metric, index) => (
-        <Fragment key={metric.label}>
-          {index > 0 && (
-            <View className="h-[52px] w-px bg-[#E9EAEF]" />
-          )}
-          <View>
-            <Text
-              className="font-poppins-semibold text-[11px] leading-4 text-text-primary"
-              numberOfLines={1}
-            >
-              {metric.label}
-            </Text>
-            <Text
-              className="mt-[9px] font-poppins-semibold text-[11px] leading-5"
-              numberOfLines={1}
-              style={{ color: metric.valueColor }}
-            >
-              {metric.value}
-            </Text>
-          </View>
-        </Fragment>
-      ))}
+      <View className="mb-4">
+        <Text className="font-poppins-semibold text-[12px] leading-4 text-text-primary">
+          Example feedback
+        </Text>
+        <Text className="mt-0.5 font-poppins-regular text-[11px] leading-4 text-text-secondary">
+          Sample ratings. This lesson is not graded yet.
+        </Text>
+      </View>
+
+      <View className="flex-row justify-between">
+        {EXAMPLE_METRICS.map((metric, index) => (
+          <Fragment key={metric.label}>
+            {index > 0 && (
+              <View className="h-[52px] w-px bg-[#E9EAEF]" />
+            )}
+            <View>
+              <Text
+                className="font-poppins-semibold text-[11px] leading-4 text-text-primary"
+                numberOfLines={1}
+              >
+                {metric.label}
+              </Text>
+              <Text
+                className="mt-[9px] font-poppins-semibold text-[11px] leading-5"
+                numberOfLines={1}
+                style={{ color: metric.valueColor }}
+              >
+                {metric.value}
+              </Text>
+            </View>
+          </Fragment>
+        ))}
+      </View>
     </View>
   );
 }

@@ -475,7 +475,7 @@ export const lessons: Lesson[] = [
       persona: "Sofía, a warm and patient Spanish tutor",
       systemPrompt:
         "You are Sofía, a friendly Spanish teacher giving a short audio lesson to a complete beginner. Speak slowly in simple Spanish and follow every sentence with its English translation. Use only today's words: la madre, el padre, la hermana, el amigo. Introduce your own family first, then ask the student about theirs. Keep every sentence under 8 words.",
-      openingLine: "¡Hola! Família time. Repeat: la madre, el padre.",
+      openingLine: "¡Hola! Familia time. Repeat: la madre, el padre.",
       focusWords: ["la madre", "el padre", "la hermana", "el amigo"],
       correctionStyle:
         "Repeat the correct word clearly, ask the student to try again, and always end with \"¡Perfecto!\"",
@@ -840,7 +840,7 @@ export const lessons: Lesson[] = [
           {
             phrase: "Estoy esperando a un amigo.",
             translation: "I am waiting for a friend.",
-            pronunciation: "ehs-TOY ehs-peh-RAHN-dah oon ah-MEE-goh",
+            pronunciation: "ehs-TOY ehs-peh-RAHN-doh oon ah-MEE-goh",
             usage: "Use it when you arrive alone.",
           },
         ],
@@ -997,7 +997,7 @@ export const lessons: Lesson[] = [
             word: "la propina",
             translation: "the tip",
             pronunciation: "lah proh-PEE-nah",
-            example: "Déjeme una propina.",
+            example: "Le dejo una propina.",
             exampleTranslation: "Let me leave a tip.",
           },
           {
@@ -1948,7 +1948,7 @@ export const lessons: Lesson[] = [
           {
             word: "昼",
             translation: "afternoon / noon",
-            pronunciation: "heer-oo",
+            pronunciation: "hee-roo",
             example: "昼ごはんを食べます。",
             exampleTranslation: "I eat lunch.",
           },
@@ -2038,7 +2038,7 @@ export const lessons: Lesson[] = [
             word: "おかあさん",
             translation: "mother",
             pronunciation: "oh-kah-sahn",
-            example: "おかあさんはかりょうりがじょうずです。",
+            example: "おかあさんはりょうりがじょうずです。",
             exampleTranslation: "My mother is a good cook.",
           },
           {

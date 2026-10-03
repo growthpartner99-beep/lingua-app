@@ -64,15 +64,15 @@ export default function LearnScreen() {
   }, [completedLessonIds, lessons]);
 
   const handleBack = () => {
-    if (units.length > 1) {
-      setIsPickerOpen(true);
-      return;
-    }
     if (router.canGoBack()) {
       router.back();
     } else {
       router.push("/home");
     }
+  };
+
+  const handleSwitchUnit = () => {
+    setIsPickerOpen(true);
   };
 
   const handleSelectUnit = (unitId: string) => {
@@ -118,7 +118,12 @@ export default function LearnScreen() {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        <UnitHero onBack={handleBack} subtitle={subtitle} unit={unit} />
+        <UnitHero
+          onBack={handleBack}
+          onSwitchUnit={handleSwitchUnit}
+          subtitle={subtitle}
+          unit={unit}
+        />
 
         <View style={styles.tabs}>
           <View style={styles.track}>
